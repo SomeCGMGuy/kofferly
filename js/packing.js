@@ -28,6 +28,26 @@ function tripPackProfile(trip) {
   return marker ? marker.trim().slice("@profile:".length) : "neutral";
 }
 
+function tripActivityProfiles(trip) {
+  const marker = String(trip?.weatherLocation || "")
+    .split(/\r?\n/)
+    .find(line => line.trim().startsWith("@activities:"));
+  if (!marker) return [];
+  try {
+    const encoded = marker.trim().slice("@activities:".length);
+    const parsed = JSON.parse(decodeURIComponent(encoded));
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (_) {
+    return [];
+  }
+}
+
+function slug(value = "") {
+  return String(value).toLocaleLowerCase("de-DE")
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "item";
+}
+
 export function weatherSummaryForTrip(trip, weather) {
   if (!weather?.days?.length || !trip?.date) return null;
   const start = trip.date;
@@ -133,6 +153,24 @@ export function generatePackingRecommendations(trip, weather = null) {
   if (wx?.max != null && wx.max >= 28) {
     const sunscreen = items.find(i => i.key === "sunscreen");
     if (sunscreen) sunscreen.reason = `Bis etwa ${Math.round(wx.max)} °C vorhergesagt – Sonnenschutz fest einplanen.`;
+  }
+
+  const existingNames = new Set(items.map(item => item.name.toLocaleLowerCase("de-DE")));
+  for (const activity of tripActivityProfiles(trip)) {
+    for (const activityItem of activity?.items || []) {
+      const name = String(activityItem?.name || "").trim();
+      if (!name || existingNames.has(name.toLocaleLowerCase("de-DE"))) continue;
+      items.push(rec(
+        `activity-${slug(activity.id || activity.name)}-${slug(name)}`,
+        String(activityItem.category || "Sonstiges"),
+        name,
+        Math.max(1, Number(activityItem.quantity) || 1),
+        String(activityItem.unit || "Stück"),
+        Boolean(activityItem.important),
+        `Aus dem Profil „${String(activity.name || "Aktivität")}“ ergänzt.`
+      ));
+      existingNames.add(name.toLocaleLowerCase("de-DE"));
+    }
   }
 
   return items;
