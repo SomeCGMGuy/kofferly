@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.6.0 – 2026-09-07
+
+### Android UI
+- Sichtbare Browser-Selects durch Android-artige Auswahlfelder mit eigenem Bottom-Sheet ersetzt; die nativen Selects bleiben unsichtbar als Formulardatenquelle erhalten.
+- `Reisende`, Kategorien und dynamisch gerenderte Auswahlfelder verwenden damit dieselbe konsistente Auswahloberfläche auf Xiaomi, Samsung und Brave.
+- `Aufgabe hinzufügen` ist nun ein Bottom-Sheet statt eines Vollbild-Push-Screens.
+- Löschbestätigungen und der Installationshinweis verwenden kompakte Alert-Dialoge statt Fullscreen-Navigation.
+- Aktivitätsprofile verwenden Android-artige Auswahlkarten mit eigenem Check-Zustand statt Browser-Checkbox-Look.
+- Suchfelder, Switches, Datumsfelder und Snackbars optisch an eine Material-/Android-Komponentenhierarchie angeglichen.
+- Header und Bottom-Navigation verwenden konsistente Inline-SVG-Icons statt Unicode-Navigationszeichen.
+- Push-Navigation bleibt nur für längere Arbeitsabläufe wie `Neue Reise` und Profilbearbeitung aktiv.
+
+### PWA
+- Neue UI-Dateien `android-ui.css` und `js/android-ui.js` werden offline gecacht.
+- Service-Worker-Cache auf `kofferly-shell-v27` angehoben.
+
 ## 0.5.0 – 2026-09-07
 
 ### Profile
