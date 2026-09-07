@@ -1,4 +1,4 @@
-const CACHE = "kofferly-shell-v23";
+const CACHE = "kofferly-shell-v24";
 const ASSETS = [
   "./",
   "./index.html",
@@ -14,6 +14,7 @@ const ASSETS = [
   "./js/app.js",
   "./js/v030.js",
   "./js/backup.js",
+  "./js/app-reload.js",
   "./js/packing-tools.js",
   "./js/travel-profile.js",
   "./js/db.js",
@@ -25,7 +26,7 @@ const ASSETS = [
 ];
 
 self.addEventListener("install", event => {
-  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)));
+  event.waitUntil(precacheFreshShell());
   self.skipWaiting();
 });
 
@@ -47,18 +48,29 @@ self.addEventListener("fetch", event => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 
-  event.respondWith((async () => {
-    try {
-      const fresh = await fetch(request, { cache: "no-store" });
-      if (fresh.ok) {
-        const cache = await caches.open(CACHE);
-        cache.put(request, fresh.clone());
-      }
-      return fresh;
-    } catch (_) {
-      const cached = await caches.match(request);
-      if (cached) return cached;
-      return caches.match("./index.html");
-    }
-  })());
+  event.respondWith(networkFirst(request));
 });
+
+async function precacheFreshShell() {
+  const cache = await caches.open(CACHE);
+  await Promise.all(ASSETS.map(async path => {
+    const request = new Request(path, { cache: "no-store" });
+    const response = await fetch(request);
+    if (!response.ok) throw new Error(`App-Datei konnte nicht geladen werden: ${path}`);
+    await cache.put(new Request(path), response);
+  }));
+}
+
+async function networkFirst(request) {
+  const cache = await caches.open(CACHE);
+  try {
+    const fresh = await fetch(request, { cache: "no-store" });
+    if (fresh.ok) await cache.put(request, fresh.clone());
+    return fresh;
+  } catch (_) {
+    const cached = await cache.match(request);
+    if (cached) return cached;
+    if (request.mode === "navigate") return cache.match("./index.html");
+    throw new Error("Offline und Ressource nicht im Cache.");
+  }
+}
