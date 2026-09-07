@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.4.2 – 2026-09-07
+
+### Packprofile
+- Auswahlfeld `Packprofil für neue Reisen` so angepasst, dass `Herren` auf schmalen Displays nicht mehr abgeschnitten wird.
+- Neues Profil `Paar` für zwei Reisende ergänzt.
+- Beim Paar-Profil werden personenbezogene Mengen wie Ausweise, Krankenversicherungskarten, Kleidung, Zahnbürsten, Smartphones, Ladekabel und Trinkflaschen für zwei Personen berechnet.
+- Das Paar-Profil berücksichtigt zusätzlich persönliche Hygieneartikel wie das Damen-Profil.
+- Auch im Dialog `Neue Reise` steht `Paar` direkt zur Auswahl.
+
+### PWA
+- Service-Worker-Cache auf `kofferly-shell-v22` angehoben.
+
 ## 0.4.1 – 2026-09-07
 
 ### Einstellungen
