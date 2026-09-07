@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.3.10 – 2026-09-07
+
+### Aktualisieren
+- Pull-to-refresh per Wischgeste ist nur noch auf der Übersicht erlaubt.
+- Auf Packliste, Reisen und Einstellungen wird das native Browser-/PWA-Overscroll-Refresh blockiert.
+- Normales vertikales Scrollen bleibt auf allen Ansichten unverändert möglich.
+- Der separate `Neu laden`-Button unter Einstellungen bleibt der Weg für einen vollständigen App-/Service-Worker-Reload nach neuen Git-Commits.
+
+### PWA
+- Service-Worker-Cache auf `kofferly-shell-v14` angehoben.
+
 ## 0.3.9 – 2026-09-07
 
 ### Aktualisieren
