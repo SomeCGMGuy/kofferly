@@ -1,4 +1,4 @@
-const CACHE = "kofferly-shell-v17";
+const CACHE = "kofferly-shell-v18";
 const ASSETS = [
   "./",
   "./index.html",
@@ -29,11 +29,14 @@ self.addEventListener("install", event => {
 });
 
 self.addEventListener("activate", event => {
-  event.waitUntil(
-    caches.keys()
-      .then(keys => Promise.all(keys.filter(key => key !== CACHE).map(key => caches.delete(key))))
-      .then(() => self.clients.claim())
-  );
+  event.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(keys.filter(key => key !== CACHE).map(key => caches.delete(key)));
+    await self.clients.claim();
+
+    const clients = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+    await Promise.all(clients.map(client => client.navigate(client.url).catch(() => null)));
+  })());
 });
 
 self.addEventListener("fetch", event => {
@@ -43,11 +46,18 @@ self.addEventListener("fetch", event => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 
-  event.respondWith(
-    caches.match(request).then(cached => cached || fetch(request).then(response => {
-      const copy = response.clone();
-      caches.open(CACHE).then(cache => cache.put(request, copy));
-      return response;
-    }).catch(() => caches.match("./index.html")))
-  );
+  event.respondWith((async () => {
+    try {
+      const fresh = await fetch(request, { cache: "no-store" });
+      if (fresh.ok) {
+        const cache = await caches.open(CACHE);
+        cache.put(request, fresh.clone());
+      }
+      return fresh;
+    } catch (_) {
+      const cached = await caches.match(request);
+      if (cached) return cached;
+      return caches.match("./index.html");
+    }
+  })());
 });
