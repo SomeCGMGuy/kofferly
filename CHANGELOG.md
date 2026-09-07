@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.3.0 – 2026-09-07
+
+### Design zurück an die Mockup-Referenz
+- Header zeigt wieder nur den Namen „Kofferly“ statt Logo + Namen.
+- Neue Reise-Statuskarte mit Flugzeug, „Noch etwas zu erledigen“ und dynamischem Abreise-Countdown.
+- Eigene Detailansicht für noch offene Kategorien ergänzt.
+- Dashboard-Erinnerungen optisch wieder näher an die ursprüngliche Mockup-Sprache gebracht.
+
+### Neu
+- In-App-Benachrichtigungscenter im Header.
+- Filter für „Alle“, „Wichtig“ und „Tipps“.
+- Lokale Hinweise für Abreise-Countdown, offene Packpunkte, letzten Check, Unterlagen und veralteten Wetterstand.
+- Gelesen/Ungelesen-Status wird lokal in IndexedDB gespeichert.
+- Benachrichtigungsarten lassen sich in den Einstellungen einzeln aktivieren oder deaktivieren.
+
+### Behoben
+- Normales und maskierbares PWA-Icon getrennt.
+- Neues maskable Icon mit großzügiger Safe-Zone für aggressive Android-Launcher-Masken, insbesondere Xiaomi/HyperOS.
+- Service-Worker-Cache auf v3 angehoben.
+
 ## 0.2.0 – 2026-09-07
 
 ### Behoben
