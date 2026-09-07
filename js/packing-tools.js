@@ -2,6 +2,7 @@ const view = document.querySelector("#view");
 const dialog = document.querySelector("#quickItemDialog");
 const form = document.querySelector("#quickItemForm");
 const categorySelect = document.querySelector("#quickItemCategory");
+let installPrompt = null;
 
 function isPackingView() {
   return view?.querySelector(".section-head h1")?.textContent?.trim() === "Packliste";
@@ -13,6 +14,10 @@ function isSettingsView() {
 
 function isHomeView() {
   return Boolean(view?.querySelector(".hero"));
+}
+
+function isInstalledPwa() {
+  return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
 }
 
 function categoryNames() {
@@ -117,6 +122,41 @@ async function loadVersion(label) {
   }
 }
 
+function installCardMarkup() {
+  if (isInstalledPwa()) {
+    return `
+      <div>
+        <h3>Kofferly installieren</h3>
+        <p class="muted">Kofferly ist bereits als App auf diesem Gerät installiert.</p>
+      </div>
+      <span class="status-badge">Installiert</span>
+    `;
+  }
+
+  if (installPrompt) {
+    return `
+      <div>
+        <h3>Kofferly installieren</h3>
+        <p class="muted">Installiert Kofferly als PWA auf deinem Homescreen.</p>
+      </div>
+      <button class="button secondary" type="button" data-install-app>App installieren</button>
+    `;
+  }
+
+  return `
+    <div>
+      <h3>Kofferly installieren</h3>
+      <p class="muted">Falls dein Browser keinen Installationsdialog anbietet, nutze im Browsermenü „App installieren“ oder „Zum Startbildschirm hinzufügen“.</p>
+    </div>
+  `;
+}
+
+function renderInstallCard() {
+  if (!isSettingsView()) return;
+  const card = view.querySelector("[data-app-install-card]");
+  if (card) card.innerHTML = installCardMarkup();
+}
+
 function simplifySettingsView() {
   if (!isSettingsView()) return;
 
@@ -153,6 +193,14 @@ function simplifySettingsView() {
     `;
     grid.prepend(card);
   }
+
+  if (grid && !grid.querySelector("[data-app-install-card]")) {
+    const installCard = document.createElement("section");
+    installCard.className = "setting-row card";
+    installCard.dataset.appInstallCard = "";
+    installCard.innerHTML = installCardMarkup();
+    grid.prepend(installCard);
+  }
 }
 
 function syncPullToRefresh() {
@@ -166,6 +214,20 @@ function enhanceCurrentView() {
   enhancePackingView();
   simplifyHomeView();
   simplifySettingsView();
+}
+
+async function installApp(button) {
+  if (!installPrompt) {
+    renderInstallCard();
+    return;
+  }
+
+  button.disabled = true;
+  const prompt = installPrompt;
+  installPrompt = null;
+  await prompt.prompt();
+  await prompt.userChoice.catch(() => null);
+  renderInstallCard();
 }
 
 async function waitForWorker(worker) {
@@ -216,6 +278,17 @@ async function reloadApp(button) {
   window.location.reload();
 }
 
+window.addEventListener("beforeinstallprompt", event => {
+  event.preventDefault();
+  installPrompt = event;
+  renderInstallCard();
+});
+
+window.addEventListener("appinstalled", () => {
+  installPrompt = null;
+  renderInstallCard();
+});
+
 let scheduled = false;
 const observer = new MutationObserver(() => {
   if (scheduled) return;
@@ -234,6 +307,9 @@ document.addEventListener("input", event => {
 document.addEventListener("click", event => {
   if (event.target.closest("[data-quick-add-item]")) openQuickItem();
   if (event.target.closest("[data-quick-item-close]")) dialog.close("cancel");
+
+  const installButton = event.target.closest("[data-install-app]");
+  if (installButton) installApp(installButton);
 
   const reloadButton = event.target.closest("[data-reload-app]");
   if (reloadButton) reloadApp(reloadButton);
