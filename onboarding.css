@@ -25,10 +25,11 @@ body.onboarding-open dialog[open]{visibility:hidden}
 .onboarding-progress{display:flex;justify-content:center;gap:7px}
 .onboarding-dot{width:7px;height:7px;border:0;border-radius:999px;background:#bdc9c2;padding:0;transition:width .2s ease,background .2s ease}
 .onboarding-dot.is-active{width:24px;background:var(--forest)}
-.onboarding-actions{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center}
-.onboarding-back{border:0;background:transparent;color:var(--forest);font:inherit;font-weight:800;min-height:52px;padding:0 14px;visibility:hidden}
+.onboarding-actions{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.onboarding-back,.onboarding-next{border:0;background:transparent;color:var(--forest);font:inherit;font-weight:800;min-height:48px;padding:0 10px;box-shadow:none;border-radius:12px}
+.onboarding-back{visibility:hidden}
 .onboarding-back.is-visible{visibility:visible}
-.onboarding-next{min-height:54px;border:0;border-radius:17px;background:var(--forest);color:white;font:inherit;font-weight:900;font-size:1rem;padding:0 22px;box-shadow:0 12px 28px rgba(31,79,63,.22)}
+.onboarding-next{margin-left:auto;font-size:1rem}
 .onboarding-next:active,.onboarding-skip:active,.onboarding-back:active{transform:scale(.98);opacity:.82}
 .onboarding-setting-icon{width:44px;height:44px;border-radius:15px;background:var(--sage);color:var(--forest);display:grid;place-items:center;flex:0 0 auto}
 .onboarding-setting-icon svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
