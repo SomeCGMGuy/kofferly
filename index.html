@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="./styles.css" />
   <link rel="stylesheet" href="./v030.css" />
   <link rel="stylesheet" href="./android-ui.css" />
+  <link rel="stylesheet" href="./onboarding.css" />
   <title>Kofferly</title>
 </head>
 <body>
@@ -32,6 +33,39 @@
     </nav>
   </div>
 
+  <section id="onboardingShell" class="onboarding-shell" role="dialog" aria-modal="true" aria-label="Kofferly Einführung" aria-hidden="true" hidden>
+    <div class="onboarding-frame">
+      <header class="onboarding-top">
+        <div class="onboarding-brand">Kofferly.</div>
+        <button class="onboarding-skip" type="button" data-onboarding-skip>Überspringen</button>
+      </header>
+      <div class="onboarding-stage" aria-live="polite">
+        <article class="onboarding-slide is-active" data-onboarding-slide aria-hidden="false">
+          <div class="onboarding-visual" aria-hidden="true"><svg viewBox="0 0 120 120"><path d="M39 43V31c0-10 8-18 21-18s21 8 21 18v12M25 42h70c5 0 9 4 9 9v49H16V51c0-5 4-9 9-9Z"/><path d="M16 65h88M43 42v58M77 42v58M53 57h14"/></svg></div>
+          <div class="onboarding-copy"><p class="eyebrow">Willkommen</p><h1>Reisen planen. Einfach packen.</h1><p>Kofferly bündelt Reise, Packliste, Wetter und Erinnerungen an einem Ort – auf deinem Smartphone und auch offline.</p><div class="onboarding-feature-row"><span class="onboarding-chip">Offline bereit</span><span class="onboarding-chip">Ohne Konto</span><span class="onboarding-chip">Lokal gespeichert</span></div></div>
+        </article>
+        <article class="onboarding-slide" data-onboarding-slide aria-hidden="true">
+          <div class="onboarding-visual" aria-hidden="true"><svg viewBox="0 0 120 120"><path d="M28 25h64a8 8 0 0 1 8 8v62H20V33a8 8 0 0 1 8-8Z"/><path d="M20 45h80M42 17v16M78 17v16M36 62h12M36 76h20M70 62h14M70 76h14"/></svg></div>
+          <div class="onboarding-copy"><p class="eyebrow">Deine Reise</p><h1>Einmal anlegen, alles im Blick.</h1><p>Wähle Ziel und Reisedaten. Optional ergänzt du Reisende, Interessen und mehrere Wetterorte – ideal für Rundreisen und Kreuzfahrten.</p><div class="onboarding-feature-row"><span class="onboarding-chip">Reisedaten</span><span class="onboarding-chip">Profile</span><span class="onboarding-chip">Mehrere Orte</span></div></div>
+        </article>
+        <article class="onboarding-slide" data-onboarding-slide aria-hidden="true">
+          <div class="onboarding-visual" aria-hidden="true"><svg viewBox="0 0 120 120"><path d="M28 22h64v76H28Z"/><path d="m39 42 7 7 12-15M39 66l7 7 12-15M67 42h14M67 66h14"/><path d="M39 88h42"/></svg></div>
+          <div class="onboarding-copy"><p class="eyebrow">Intelligente Packliste</p><h1>Packen, passend zu deiner Reise.</h1><p>Kofferly berechnet Mengen aus Reisedauer und Profilen und berücksichtigt das Wetter. Eigene Aufgaben kannst du jederzeit ergänzen, suchen und abhaken.</p><div class="onboarding-feature-row"><span class="onboarding-chip">Mengen automatisch</span><span class="onboarding-chip">Wetterabhängig</span><span class="onboarding-chip">Eigene Aufgaben</span></div></div>
+        </article>
+        <article class="onboarding-slide" data-onboarding-slide aria-hidden="true">
+          <div class="onboarding-visual" aria-hidden="true"><svg viewBox="0 0 120 120"><path d="M60 18a30 30 0 0 0-30 30c0 32-13 32-13 41h86c0-9-13-9-13-41a30 30 0 0 0-30-30Z"/><path d="M50 101h20M43 58h34M60 42v16"/></svg></div>
+          <div class="onboarding-copy"><p class="eyebrow">Unterwegs entspannt</p><h1>Kofferly erinnert dich rechtzeitig.</h1><p>Die Übersicht zeigt Countdown, Wetter und offene Punkte. Benachrichtigungen weisen dich auf Wichtiges hin. Backups und App-Updates findest du jederzeit in den Einstellungen.</p><div class="onboarding-feature-row"><span class="onboarding-chip">Countdown</span><span class="onboarding-chip">Erinnerungen</span><span class="onboarding-chip">Backup & Updates</span></div></div>
+        </article>
+      </div>
+      <footer class="onboarding-footer">
+        <div class="onboarding-progress" aria-label="Fortschritt">
+          <button class="onboarding-dot is-active" type="button" data-onboarding-dot aria-label="Seite 1"></button><button class="onboarding-dot" type="button" data-onboarding-dot aria-label="Seite 2"></button><button class="onboarding-dot" type="button" data-onboarding-dot aria-label="Seite 3"></button><button class="onboarding-dot" type="button" data-onboarding-dot aria-label="Seite 4"></button>
+        </div>
+        <div class="onboarding-actions"><button class="onboarding-back" type="button" data-onboarding-back>Zurück</button><button class="onboarding-next" type="button" data-onboarding-next>Weiter</button></div>
+      </footer>
+    </div>
+  </section>
+
   <dialog id="tripDialog" class="modal"><form method="dialog" id="tripForm" class="modal-card"><div class="modal-head"><div><p class="eyebrow">Neue Reise</p><h2>Wohin geht's?</h2></div><button value="cancel" class="icon-button" aria-label="Schließen">×</button></div><label>Reiseziel<input id="tripDestination" name="destination" required placeholder="z. B. Südtirol oder Donaukreuzfahrt" autocomplete="off" /></label><label>Reisende <span class="label-hint">optional</span><select id="tripPackProfile" name="packProfile" data-android-select="Reisende"><option value="neutral">Keine Angabe</option><option value="women">Dame</option><option value="men">Herr</option><option value="couple">Paar</option></select><small class="field-help">Das Paar-Profil rechnet personenbezogene Mengen für zwei Reisende.</small></label><section class="activity-picker" aria-labelledby="activityPickerTitle"><div class="activity-picker-head"><div><strong id="activityPickerTitle">Interessen & Aktivitäten</strong><small class="field-help">Mehrere Profile können kombiniert werden.</small></div></div><input id="activityProfileSearch" type="search" placeholder="Profile durchsuchen …" autocomplete="off" aria-label="Aktivitätsprofile durchsuchen" /><div id="activityProfileChoices" class="activity-profile-choices"></div></section><label>Wetterorte <span class="label-hint">optional</span><textarea id="tripWeatherLocation" name="weatherLocation" rows="3" placeholder="Ein Ort pro Zeile, z. B.&#10;Passau&#10;Wien&#10;Budapest" autocomplete="off"></textarea><small class="field-help">Für Rundreisen oder Kreuzfahrten kannst du mehrere Stationen angeben. Kofferly berücksichtigt für die Packliste den ungünstigsten Wetterfall entlang der Route.</small></label><label>Abreise<input id="tripDate" name="date" type="date" required /></label><label>Rückreise<input id="tripEndDate" name="endDate" type="date" /></label><label>Notiz<textarea id="tripNote" name="note" rows="3" placeholder="Unterkunft, Treffpunkt, Besonderheiten …"></textarea></label><div class="modal-actions"><button value="cancel" class="button ghost">Abbrechen</button><button id="saveTripButton" value="default" class="button primary">Reise anlegen</button></div></form></dialog>
 
   <dialog id="confirmDialog" class="modal alert-dialog"><form method="dialog" class="modal-card compact"><h2 id="confirmTitle">Wirklich löschen?</h2><p id="confirmText" class="muted"></p><div class="modal-actions"><button value="cancel" class="button ghost">Abbrechen</button><button value="confirm" class="button danger">Löschen</button></div></form></dialog>
@@ -49,6 +83,7 @@
   <script type="module" src="./js/v030.js"></script>
   <script type="module" src="./js/backup.js"></script>
   <script type="module" src="./js/app-reload.js"></script>
+  <script type="module" src="./js/onboarding.js"></script>
   <script type="module" src="./js/packing-tools.js"></script>
   <script type="module" src="./js/travel-profile.js"></script>
   <script type="module" src="./js/native-behavior.js"></script>
