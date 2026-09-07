@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.4.1 – 2026-09-07
+
+### Einstellungen
+- Doppelte Anzeige `Packprofil für neue Reisen` behoben.
+- Asynchrone Initialisierung der Profilkarte gegen parallele MutationObserver-Aufrufe abgesichert.
+- Falls durch einen alten Renderzustand bereits mehrere Profilkarten vorhanden sind, werden zusätzliche Duplikate automatisch entfernt.
+
+### PWA
+- Service-Worker-Cache auf `kofferly-shell-v21` angehoben.
+
 ## 0.4.0 – 2026-09-07
 
 ### Packliste
