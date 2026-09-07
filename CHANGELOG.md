@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.4 – 2026-09-07
+
+### Packliste
+- Lösch-`×` bei Aufgaben aus dem Mengen-/Statusbereich gelöst und als eigene Aktion ganz rechts positioniert.
+- Löschaktion sitzt unabhängig von Textlänge und Badge-Anzahl vertikal mittig im Eintrag.
+- Auf schmalen Displays bleibt der rechte Aktionsbereich stabil, während Mengen-/Statusbadges weiterhin sauber umbrechen können.
+
+### PWA
+- Service-Worker-Cache auf `kofferly-shell-v8` angehoben, damit die Layout-Korrektur zuverlässig ausgeliefert wird.
+
 ## 0.3.3 – 2026-09-07
 
 ### Design
