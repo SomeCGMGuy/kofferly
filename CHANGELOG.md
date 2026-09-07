@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.3.9 – 2026-09-07
+
+### Aktualisieren
+- Manueller Packlisten-Refresh entfernt; die Packliste wird nicht mehr über einen separaten Aktualisieren-Button neu berechnet.
+- Manueller Reisezielbild-Refresh aus der Übersicht entfernt.
+- Einziger inhaltlicher Refresh in der Übersicht bleibt `Wetter aktualisieren`; dabei werden Wetterdaten geladen und die wetterabhängige Packempfehlung intern angepasst.
+
+### Einstellungen
+- Neuer Button `Neu laden` für einen echten App-Reload ergänzt.
+- Beim Neu laden werden nur Kofferlys PWA-Shell-Caches verworfen, der Service Worker explizit auf Updates geprüft und die Seite anschließend vollständig neu geladen.
+- IndexedDB mit Reisen, Packlisten, Bildern, Wetterdaten und Einstellungen bleibt dabei erhalten.
+- Offline wird kein Update-Reload gestartet, damit die App nicht ohne Shell-Cache neu laden muss.
+
+### PWA
+- Service-Worker-Cache auf `kofferly-shell-v13` angehoben.
+
 ## 0.3.8 – 2026-09-07
 
 ### Übersicht
