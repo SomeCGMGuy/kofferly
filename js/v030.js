@@ -7,6 +7,9 @@ const dialog = document.querySelector("#notificationDialog");
 const list = document.querySelector("#notificationList");
 const view = document.querySelector("#view");
 
+let cachedSnapshot = null;
+let refreshScheduled = false;
+
 function esc(value = "") {
   return String(value).replace(/[&<>"']/g, ch => ({
     "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
@@ -84,8 +87,9 @@ function candidateNotifications({ trip, items, weather }) {
   return notes;
 }
 
-async function refreshNotificationUi(markRead = false) {
-  const snapshot = await currentTripSnapshot();
+async function refreshNotificationUi(markRead = false, snapshotOverride = null) {
+  const snapshot = snapshotOverride || await currentTripSnapshot();
+  if (snapshot) cachedSnapshot = snapshot;
   const notes = snapshot ? candidateNotifications(snapshot) : [];
   const readIds = new Set(await getSetting("notificationReadIds", []));
   const unread = notes.filter(note => !readIds.has(note.id));
@@ -113,15 +117,7 @@ async function refreshNotificationUi(markRead = false) {
   }
 }
 
-async function insertCountdownCard() {
-  if (!view || view.querySelector(".mockup-countdown-card")) return;
-  const hero = view.querySelector(".hero");
-  if (!hero) return;
-
-  const snapshot = await currentTripSnapshot();
-  if (!snapshot || !document.body.contains(hero) || view.querySelector(".mockup-countdown-card")) return;
-
-  const { trip, items } = snapshot;
+function buildCountdownCard({ trip, items }) {
   const days = daysUntil(trip.date);
   const open = items.filter(item => !item.checked);
   const important = open.filter(item => item.important);
@@ -140,25 +136,48 @@ async function insertCountdownCard() {
     </div>
     <button class="countdown-link" data-route="packing">${ready ? "Packliste ansehen" : "Zur Packliste"}<span aria-hidden="true">→</span></button>
   `;
-
-  hero.insertAdjacentElement("afterend", card);
+  return card;
 }
 
-let scheduled = false;
+function insertCountdownCardFromSnapshot(snapshot) {
+  if (!view || !snapshot || view.querySelector(".mockup-countdown-card")) return false;
+  const hero = view.querySelector(".hero");
+  if (!hero) return false;
+  hero.insertAdjacentElement("afterend", buildCountdownCard(snapshot));
+  return true;
+}
+
+async function refreshSnapshotAndUi() {
+  const snapshot = await currentTripSnapshot();
+  cachedSnapshot = snapshot;
+
+  if (snapshot && !view.querySelector(".mockup-countdown-card")) {
+    insertCountdownCardFromSnapshot(snapshot);
+  }
+
+  await refreshNotificationUi(false, snapshot);
+}
+
 const observer = new MutationObserver(() => {
-  if (scheduled) return;
-  scheduled = true;
+  // Reinsert the last known countdown synchronously in the mutation microtask.
+  // This happens before the browser paints the newly rendered home view and
+  // prevents the card from visibly disappearing while IndexedDB is read again.
+  insertCountdownCardFromSnapshot(cachedSnapshot);
+
+  if (refreshScheduled) return;
+  refreshScheduled = true;
   queueMicrotask(async () => {
-    scheduled = false;
-    await insertCountdownCard();
-    await refreshNotificationUi(false);
+    refreshScheduled = false;
+    await refreshSnapshotAndUi();
   });
 });
 
 observer.observe(view, { childList: true, subtree: true });
 
 bell?.addEventListener("click", async () => {
-  await refreshNotificationUi(true);
+  const snapshot = await currentTripSnapshot();
+  cachedSnapshot = snapshot;
+  await refreshNotificationUi(true, snapshot);
   dialog.showModal();
 });
 
@@ -168,5 +187,6 @@ dialog?.addEventListener("click", event => {
   if (event.target === dialog) dialog.close();
 });
 
-await insertCountdownCard();
-await refreshNotificationUi(false);
+cachedSnapshot = await currentTripSnapshot();
+insertCountdownCardFromSnapshot(cachedSnapshot);
+await refreshNotificationUi(false, cachedSnapshot);
