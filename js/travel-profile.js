@@ -5,6 +5,7 @@ const PROFILE_KEY = "packProfile";
 const PROFILE_MARKER_PREFIX = "@profile:";
 
 let scheduled = false;
+let profileCardMounting = false;
 
 function isSettingsView() {
   return view?.querySelector(".section-head h1")?.textContent?.trim() === "Einstellungen";
@@ -38,29 +39,38 @@ function withProfileMarker(value, profile) {
 async function injectProfileSetting() {
   if (!isSettingsView()) return;
   const grid = view.querySelector(".settings-grid");
-  if (!grid || grid.querySelector("[data-pack-profile-card]")) return;
+  if (!grid) return;
 
-  const profile = await getSetting(PROFILE_KEY, "neutral");
-  if (!isSettingsView() || !grid.isConnected) return;
+  const existingCards = [...grid.querySelectorAll("[data-pack-profile-card]")];
+  existingCards.slice(1).forEach(card => card.remove());
+  if (existingCards.length || profileCardMounting) return;
 
-  const card = document.createElement("section");
-  card.className = "setting-row card";
-  card.dataset.packProfileCard = "";
-  card.innerHTML = `
-    <div>
-      <h3>Packprofil für neue Reisen</h3>
-      <p class="muted">Optional. Beim Damen-Profil ergänzt Kofferly persönliche Hygieneartikel automatisch. Das Profil wird nur für neu angelegte Reisen übernommen.</p>
-    </div>
-    <select data-pack-profile aria-label="Packprofil für neue Reisen">
-      <option value="neutral" ${profile === "neutral" ? "selected" : ""}>Keine Angabe</option>
-      <option value="women" ${profile === "women" ? "selected" : ""}>Damen</option>
-      <option value="men" ${profile === "men" ? "selected" : ""}>Herren</option>
-    </select>
-  `;
+  profileCardMounting = true;
+  try {
+    const profile = await getSetting(PROFILE_KEY, "neutral");
+    if (!isSettingsView() || !grid.isConnected || grid.querySelector("[data-pack-profile-card]")) return;
 
-  const installCard = grid.querySelector("[data-app-install-card]");
-  if (installCard) installCard.insertAdjacentElement("afterend", card);
-  else grid.prepend(card);
+    const card = document.createElement("section");
+    card.className = "setting-row card";
+    card.dataset.packProfileCard = "";
+    card.innerHTML = `
+      <div>
+        <h3>Packprofil für neue Reisen</h3>
+        <p class="muted">Optional. Beim Damen-Profil ergänzt Kofferly persönliche Hygieneartikel automatisch. Das Profil wird nur für neu angelegte Reisen übernommen.</p>
+      </div>
+      <select data-pack-profile aria-label="Packprofil für neue Reisen">
+        <option value="neutral" ${profile === "neutral" ? "selected" : ""}>Keine Angabe</option>
+        <option value="women" ${profile === "women" ? "selected" : ""}>Damen</option>
+        <option value="men" ${profile === "men" ? "selected" : ""}>Herren</option>
+      </select>
+    `;
+
+    const installCard = grid.querySelector("[data-app-install-card]");
+    if (installCard) installCard.insertAdjacentElement("afterend", card);
+    else grid.prepend(card);
+  } finally {
+    profileCardMounting = false;
+  }
 }
 
 async function enhanceRouteWeatherInput() {
