@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.3.12 – 2026-09-07
+
+### Einstellungen
+- Neue Karte `Kofferly installieren` ergänzt.
+- Unterstützt der Browser den PWA-Installationsprompt, kann Kofferly direkt über `App installieren` auf dem Homescreen installiert werden.
+- Läuft Kofferly bereits im Standalone-/PWA-Modus, zeigt die Karte stattdessen den Status `Installiert`.
+- Ist kein programmatischer Installationsprompt verfügbar, verweist die Karte auf `App installieren` bzw. `Zum Startbildschirm hinzufügen` im Browsermenü.
+- Nach erfolgreicher Installation aktualisiert sich der Installationsstatus automatisch.
+
+### PWA
+- Service-Worker-Cache auf `kofferly-shell-v16` angehoben.
+
 ## 0.3.11 – 2026-09-07
 
 ### Einstellungen
