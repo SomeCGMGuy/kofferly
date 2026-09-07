@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.5 – 2026-09-07
+
+### Navigation
+- Bottom-Navigation bleibt während Push- und Pop-Animationen fest an ihrer Position.
+- Statt die gesamte App-Shell zu transformieren, bewegen sich nur Header und Inhaltsbereich leicht nach links bzw. zurück.
+- Dadurch entfällt das sichtbare Zurückspringen des Footers am Ende der Rückwärtsanimation.
+
+### PWA
+- Service-Worker-Cache auf `kofferly-shell-v9` angehoben.
+
 ## 0.3.4 – 2026-09-07
 
 ### Packliste
