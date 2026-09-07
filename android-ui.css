@@ -1,0 +1,77 @@
+/* Android / Material-inspired interaction layer. */
+.icon-button svg,.nav-icon,.android-select-field svg,.choice-option svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.nav-icon{width:24px;height:24px}
+.nav-item.active{background:transparent;color:var(--forest)}
+.nav-item.active .nav-icon{background:var(--forest-3);border-radius:999px;padding:5px;width:38px;height:28px}
+
+/* Replace browser select chrome while keeping the native select as the form source of truth. */
+.android-native-select-source{position:absolute!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important;margin:0!important;padding:0!important;border:0!important}
+.android-select-field{width:100%;min-height:52px;padding:0 14px;border:1px solid var(--line);border-radius:14px;background:#f7f8f5;color:var(--ink);display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left;font-weight:650}
+.android-select-field:active{background:#edf3ef}
+.android-select-field svg{flex:0 0 auto;color:var(--muted)}
+
+/* Material-like search bars. */
+input[type="search"]{min-height:50px;border:0!important;border-radius:999px!important;background:#eef2ef!important;padding:0 18px!important;box-shadow:none!important}
+input[type="search"]:focus{background:#e9efeb!important;box-shadow:0 0 0 2px rgba(33,79,63,.18)!important}
+.pack-search-bar{background:transparent!important;border:0!important;box-shadow:none!important;padding:0!important}
+.pack-search-field{min-height:52px;border-radius:999px;background:#eef2ef;padding:0 14px}
+.pack-search-field input{background:transparent!important;padding:0!important}
+.pack-search-icon svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+
+/* Bottom sheets for temporary choice / compact data entry. */
+.sheet-dialog{position:fixed;inset:auto 0 0;width:min(calc(100% - 16px),600px);max-width:none;height:auto;max-height:none;margin:0 auto;padding:0 0 calc(8px + env(safe-area-inset-bottom,0px));border:0;background:transparent;overflow:visible}
+.sheet-dialog::backdrop{background:rgba(16,33,27,.30);backdrop-filter:blur(2px)}
+.sheet-dialog .modal-card{position:relative;max-height:min(78dvh,720px);overflow-y:auto;padding:30px 18px 20px;border-radius:28px 28px 18px 18px;background:var(--paper);box-shadow:0 -18px 54px rgba(15,35,28,.22);transform:translateY(calc(100% + 32px));opacity:.98;transition:transform .21s cubic-bezier(.22,.8,.25,1),opacity .18s ease}
+.sheet-dialog.is-active .modal-card{transform:translateY(0);opacity:1}
+.sheet-dialog.is-closing .modal-card{transform:translateY(calc(100% + 32px));opacity:.98}
+.sheet-handle{position:absolute;top:10px;left:50%;width:42px;height:5px;border-radius:999px;background:#cbd5cf;transform:translateX(-50%)}
+
+.choice-sheet-options{display:grid;gap:4px}
+.choice-option{min-height:52px;width:100%;border:0;border-radius:14px;background:transparent;color:var(--ink);display:flex;align-items:center;justify-content:space-between;gap:14px;padding:10px 12px;text-align:left;font-weight:650}
+.choice-option svg{opacity:0;color:var(--forest)}
+.choice-option.selected{background:var(--sage);color:var(--forest)}
+.choice-option.selected svg{opacity:1}
+.choice-option:disabled{opacity:.45}
+
+/* Alerts should stay compact instead of becoming navigation destinations. */
+.alert-dialog{position:fixed;inset:0;width:min(calc(100% - 40px),440px);max-width:none;margin:auto;padding:0;border:0;background:transparent}
+.alert-dialog::backdrop{background:rgba(16,33,27,.34);backdrop-filter:blur(2px)}
+.alert-dialog .modal-card{padding:22px;border-radius:24px;background:var(--paper);box-shadow:0 24px 72px rgba(15,35,28,.28)}
+.alert-dialog .modal-actions{justify-content:flex-end}
+.alert-dialog .button{background:transparent;color:var(--forest);padding-inline:12px}
+.alert-dialog .button.danger{color:var(--danger)}
+
+/* Multi-select activity cards: custom Android checkbox treatment. */
+.activity-choice{grid-template-columns:1fr auto;cursor:pointer;transition:background .15s ease,border-color .15s ease}
+.activity-choice span{grid-column:1;grid-row:1}
+.activity-choice input{grid-column:2;grid-row:1;appearance:none;width:22px;height:22px;border:2px solid #8fa39a;border-radius:6px;background:white;display:grid;place-content:center;margin:1px 0 0 8px}
+.activity-choice input:checked{background:var(--forest);border-color:var(--forest)}
+.activity-choice input:checked::after{content:"✓";color:white;font-size:.84rem;font-weight:900;line-height:1}
+.activity-choice:has(input:checked){background:var(--sage);border-color:#9fc4b2}
+
+/* Make boolean controls feel consistent with Android. */
+.quick-important-row{min-height:50px;padding:8px 2px}
+.quick-important-row input,.profile-important input{appearance:none;width:22px!important;height:22px!important;border:2px solid #8fa39a;border-radius:6px;background:white;display:grid;place-content:center;padding:0!important}
+.quick-important-row input:checked,.profile-important input:checked{background:var(--forest);border-color:var(--forest)}
+.quick-important-row input:checked::after,.profile-important input:checked::after{content:"✓";color:white;font-size:.84rem;font-weight:900;line-height:1}
+.setting-row{min-height:72px}
+.switch{width:52px;height:32px}
+.switch span::after{width:26px;height:26px}
+.switch input:checked + span::after{transform:translateX(20px)}
+
+/* Android Snackbar rather than a floating web pill. */
+.toast{left:50%!important;bottom:calc(82px + var(--safe-bottom))!important;width:min(calc(100% - 28px),520px)!important;transform:translateX(-50%)!important;border-radius:12px!important;background:#25312c!important;color:white!important;padding:14px 16px!important;box-shadow:0 8px 24px rgba(0,0,0,.22)!important;font-size:.88rem!important;text-align:left}
+
+/* Date inputs remain native intentionally, but use the same touch target and field surface. */
+input[type="date"]{min-height:52px;background:#f7f8f5}
+
+@media (max-width:760px){
+  .sheet-dialog{width:100%;padding-bottom:env(safe-area-inset-bottom,0px)}
+  .sheet-dialog .modal-card{border-radius:28px 28px 0 0}
+  .alert-dialog{width:min(calc(100% - 32px),440px)}
+}
+
+@media (prefers-reduced-motion:reduce){
+  .sheet-dialog .modal-card{transition:none!important}
+  .sheet-dialog[open] .modal-card{transform:none!important;opacity:1!important}
+}
