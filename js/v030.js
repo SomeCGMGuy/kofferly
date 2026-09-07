@@ -9,6 +9,7 @@ const view = document.querySelector("#view");
 
 let cachedSnapshot = null;
 let refreshScheduled = false;
+let notificationCloseTimer = 0;
 
 function esc(value = "") {
   return String(value).replace(/[&<>"']/g, ch => ({
@@ -117,6 +118,24 @@ async function refreshNotificationUi(markRead = false, snapshotOverride = null) 
   }
 }
 
+function openNotificationSheet() {
+  if (!dialog || dialog.open) return;
+  window.clearTimeout(notificationCloseTimer);
+  dialog.classList.remove("is-closing");
+  dialog.showModal();
+  requestAnimationFrame(() => requestAnimationFrame(() => dialog.classList.add("is-open")));
+}
+
+function closeNotificationSheet() {
+  if (!dialog?.open || dialog.classList.contains("is-closing")) return;
+  dialog.classList.remove("is-open");
+  dialog.classList.add("is-closing");
+  notificationCloseTimer = window.setTimeout(() => {
+    dialog.classList.remove("is-closing");
+    dialog.close();
+  }, 180);
+}
+
 function buildCountdownCard({ trip, items }) {
   const days = daysUntil(trip.date);
   const open = items.filter(item => !item.checked);
@@ -159,9 +178,6 @@ async function refreshSnapshotAndUi() {
 }
 
 const observer = new MutationObserver(() => {
-  // Reinsert the last known countdown synchronously in the mutation microtask.
-  // This happens before the browser paints the newly rendered home view and
-  // prevents the card from visibly disappearing while IndexedDB is read again.
   insertCountdownCardFromSnapshot(cachedSnapshot);
 
   if (refreshScheduled) return;
@@ -178,13 +194,22 @@ bell?.addEventListener("click", async () => {
   const snapshot = await currentTripSnapshot();
   cachedSnapshot = snapshot;
   await refreshNotificationUi(true, snapshot);
-  dialog.showModal();
+  openNotificationSheet();
 });
 
-document.querySelector("[data-notification-close]")?.addEventListener("click", () => dialog.close());
+document.querySelector("[data-notification-close]")?.addEventListener("click", closeNotificationSheet);
+
+dialog?.addEventListener("cancel", event => {
+  event.preventDefault();
+  closeNotificationSheet();
+});
 
 dialog?.addEventListener("click", event => {
-  if (event.target === dialog) dialog.close();
+  if (event.target === dialog) closeNotificationSheet();
+});
+
+dialog?.addEventListener("close", () => {
+  dialog.classList.remove("is-open", "is-closing");
 });
 
 cachedSnapshot = await currentTripSnapshot();
