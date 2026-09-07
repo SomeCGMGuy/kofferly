@@ -1,15 +1,17 @@
-const CACHE = "kofferly-shell-v26";
+const CACHE = "kofferly-shell-v27";
 const ASSETS = [
   "./",
   "./index.html",
   "./styles.css",
   "./v030.css",
+  "./android-ui.css",
   "./manifest.webmanifest",
   "./VERSION",
   "./icons/icon.svg",
   "./icons/icon-maskable.svg",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
+  "./js/android-ui.js",
   "./js/push-navigation.js",
   "./js/app.js",
   "./js/v030.js",
@@ -35,7 +37,6 @@ self.addEventListener("activate", event => {
     const keys = await caches.keys();
     await Promise.all(keys.filter(key => key !== CACHE).map(key => caches.delete(key)));
     await self.clients.claim();
-
     const clients = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
     await Promise.all(clients.map(client => client.navigate(client.url).catch(() => null)));
   })());
@@ -44,10 +45,8 @@ self.addEventListener("activate", event => {
 self.addEventListener("fetch", event => {
   const request = event.request;
   if (request.method !== "GET") return;
-
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
-
   event.respondWith(networkFirst(request));
 });
 
