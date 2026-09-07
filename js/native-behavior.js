@@ -98,7 +98,6 @@ function patchDialogHistory(dialog) {
     if (hadHistoryEntry && !internalHistoryClose) {
       internalHistoryClose = true;
       history.back();
-      setTimeout(() => { internalHistoryClose = false; }, 0);
     }
 
     setTimeout(() => {
@@ -148,8 +147,6 @@ document.addEventListener("focusout", () => setTimeout(updateKeyboardState, 90))
 window.visualViewport?.addEventListener("resize", updateKeyboardState);
 window.visualViewport?.addEventListener("scroll", updateKeyboardState);
 
-// Android-style keyboard action: Search closes the keyboard; Enter on a simple
-// single-line field advances to the next editable field instead of inserting noise.
 document.addEventListener("keydown", event => {
   if (event.key !== "Enter" || event.shiftKey || event.ctrlKey || event.altKey || event.metaKey) return;
   const target = event.target;
@@ -173,11 +170,18 @@ document.addEventListener("keydown", event => {
 });
 
 window.addEventListener("popstate", event => {
-  const openDialog = dialogs.find(dialog => dialog.open) || document.querySelector("dialog[open]");
+  // A dialog closed itself and is only removing its own history entry.
+  // Do not treat that internal history cleanup as another Android Back action,
+  // otherwise a parent sheet below a nested choice sheet would close as well.
+  if (internalHistoryClose) {
+    internalHistoryClose = false;
+    return;
+  }
+
+  const openDialog = [...document.querySelectorAll("dialog[open]")].at(-1);
   if (openDialog) {
     internalHistoryClose = true;
     openDialog.close("back");
-    setTimeout(() => { internalHistoryClose = false; }, 0);
     return;
   }
 
