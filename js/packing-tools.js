@@ -105,6 +105,18 @@ function simplifyHomeView() {
   view.querySelector("[data-action='refresh-image']")?.remove();
 }
 
+async function loadVersion(label) {
+  try {
+    const response = await fetch("./VERSION");
+    if (!response.ok) throw new Error(`VERSION ${response.status}`);
+    const version = (await response.text()).trim();
+    if (label.isConnected && version) label.textContent = `Version ${version}`;
+  } catch (error) {
+    console.warn("Kofferly version could not be read.", error);
+    if (label.isConnected) label.textContent = "Version unbekannt";
+  }
+}
+
 function simplifySettingsView() {
   if (!isSettingsView()) return;
 
@@ -114,6 +126,20 @@ function simplifySettingsView() {
   }
 
   const grid = view.querySelector(".settings-grid");
+  if (grid && !grid.querySelector("[data-app-version-card]")) {
+    const versionCard = document.createElement("section");
+    versionCard.className = "setting-row card";
+    versionCard.dataset.appVersionCard = "";
+    versionCard.innerHTML = `
+      <div>
+        <h3>Installierte Version</h3>
+        <p class="muted" data-app-version>Version wird geladen …</p>
+      </div>
+    `;
+    grid.prepend(versionCard);
+    loadVersion(versionCard.querySelector("[data-app-version]"));
+  }
+
   if (grid && !grid.querySelector("[data-app-reload-card]")) {
     const card = document.createElement("section");
     card.className = "setting-row card";
