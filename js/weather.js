@@ -18,6 +18,19 @@ function normalized(value = "") {
   return value.trim().toLocaleLowerCase("de-DE");
 }
 
+function splitWeatherLocations(value = "") {
+  return [...new Set(String(value)
+    .split(/\r?\n|;/)
+    .map(part => part.trim())
+    .filter(Boolean))];
+}
+
+function weatherQueries(trip) {
+  const explicit = splitWeatherLocations(trip.weatherLocation || "");
+  if (explicit.length) return explicit;
+  return trip.destination?.trim() ? [trip.destination.trim()] : [];
+}
+
 async function fetchJson(url, label) {
   let res;
   try {
@@ -61,34 +74,36 @@ async function geocode(query) {
   return pickBestPlace(results, query);
 }
 
-export async function resolveWeatherPlace(trip) {
-  const explicit = trip.weatherLocation?.trim();
-  const destination = trip.destination?.trim();
-  const candidates = [];
-
-  if (explicit) candidates.push(explicit);
-  if (destination && destination !== explicit) candidates.push(destination);
-
-  const fallback = REGION_FALLBACKS.get(normalized(explicit || destination));
+async function resolveQuery(query, destination = "") {
+  const candidates = [query];
+  const fallback = REGION_FALLBACKS.get(normalized(query));
   if (fallback) candidates.push(fallback);
 
-  // A destination such as "Dorf Tirol (Südtirol)" often geocodes better without brackets.
-  if (destination) {
-    const simplified = destination.replace(/\([^)]*\)/g, "").trim();
-    if (simplified && !candidates.includes(simplified)) candidates.push(simplified);
+  const simplified = query.replace(/\([^)]*\)/g, "").trim();
+  if (simplified && !candidates.includes(simplified)) candidates.push(simplified);
+
+  if (query === destination) {
+    const destinationFallback = REGION_FALLBACKS.get(normalized(destination));
+    if (destinationFallback && !candidates.includes(destinationFallback)) candidates.push(destinationFallback);
   }
 
-  for (const query of [...new Set(candidates.filter(Boolean))]) {
-    const place = await geocode(query);
+  for (const candidate of [...new Set(candidates.filter(Boolean))]) {
+    const place = await geocode(candidate);
     if (place) return { place, query };
   }
 
-  throw new Error(`Für „${explicit || destination}“ wurde kein eindeutiger Wetterort gefunden. Bitte einen Ort wie „Dorf Tirol“ oder „Bozen“ eintragen.`);
+  return null;
 }
 
-export async function refreshWeather(trip) {
-  const { place, query } = await resolveWeatherPlace(trip);
+export async function resolveWeatherPlace(trip) {
+  const query = weatherQueries(trip)[0];
+  if (!query) throw new Error("Kein Wetterort vorhanden.");
+  const resolved = await resolveQuery(query, trip.destination?.trim() || "");
+  if (resolved) return resolved;
+  throw new Error(`Für „${query}“ wurde kein eindeutiger Wetterort gefunden. Bitte einen Ort wie „Dorf Tirol“ oder „Bozen“ eintragen.`);
+}
 
+async function fetchForecast(place) {
   const params = new URLSearchParams({
     latitude: String(place.latitude),
     longitude: String(place.longitude),
@@ -100,22 +115,90 @@ export async function refreshWeather(trip) {
   const data = await fetchJson(`${FORECAST}?${params}`, "Wetterdienst");
   if (!data.daily?.time?.length) throw new Error("Wetterdienst: Es wurden keine Tageswerte geliefert.");
 
-  const days = data.daily.time.map((date, i) => ({
-    date,
-    code: data.daily.weather_code?.[i] ?? null,
-    max: data.daily.temperature_2m_max?.[i] ?? null,
-    min: data.daily.temperature_2m_min?.[i] ?? null,
-    rain: data.daily.precipitation_probability_max?.[i] ?? 0
+  return {
+    timezone: data.timezone,
+    days: data.daily.time.map((date, i) => ({
+      date,
+      code: data.daily.weather_code?.[i] ?? null,
+      max: data.daily.temperature_2m_max?.[i] ?? null,
+      min: data.daily.temperature_2m_min?.[i] ?? null,
+      rain: data.daily.precipitation_probability_max?.[i] ?? 0
+    }))
+  };
+}
+
+function aggregateForecasts(forecasts) {
+  const byDate = new Map();
+
+  for (const forecast of forecasts) {
+    for (const day of forecast.days) {
+      const current = byDate.get(day.date) || {
+        date: day.date,
+        code: day.code,
+        max: null,
+        min: null,
+        rain: 0
+      };
+
+      if (Number.isFinite(Number(day.max))) {
+        current.max = current.max == null ? Number(day.max) : Math.max(current.max, Number(day.max));
+      }
+      if (Number.isFinite(Number(day.min))) {
+        current.min = current.min == null ? Number(day.min) : Math.min(current.min, Number(day.min));
+      }
+      if (Number.isFinite(Number(day.rain)) && Number(day.rain) >= current.rain) {
+        current.rain = Number(day.rain);
+        current.code = day.code;
+      }
+
+      byDate.set(day.date, current);
+    }
+  }
+
+  return [...byDate.values()].sort((a, b) => a.date.localeCompare(b.date));
+}
+
+export async function refreshWeather(trip) {
+  const queries = weatherQueries(trip);
+  if (!queries.length) throw new Error("Für diese Reise wurde kein Wetterort gefunden.");
+
+  const resolved = [];
+  const unresolved = [];
+
+  for (const query of queries) {
+    const result = await resolveQuery(query, trip.destination?.trim() || "");
+    if (result) resolved.push(result);
+    else unresolved.push(query);
+  }
+
+  if (!resolved.length) {
+    throw new Error(`Für „${queries.join(" · ")}“ wurde kein eindeutiger Wetterort gefunden.`);
+  }
+
+  const forecasts = [];
+  for (const entry of resolved) {
+    const forecast = await fetchForecast(entry.place);
+    forecasts.push({ ...forecast, ...entry });
+  }
+
+  const places = forecasts.map(entry => ({
+    query: entry.query,
+    place: [entry.place.name, entry.place.admin1, entry.place.country].filter(Boolean).join(", "),
+    latitude: entry.place.latitude,
+    longitude: entry.place.longitude,
+    timezone: entry.timezone
   }));
 
   const row = {
     tripId: trip.id,
-    query,
-    place: [place.name, place.admin1, place.country].filter(Boolean).join(", "),
-    latitude: place.latitude,
-    longitude: place.longitude,
-    timezone: data.timezone,
-    days,
+    query: queries.join("; "),
+    place: places.length === 1 ? places[0].place : `${places.length} Orte entlang der Route`,
+    places,
+    unresolved,
+    latitude: places[0]?.latitude ?? null,
+    longitude: places[0]?.longitude ?? null,
+    timezone: places[0]?.timezone || "auto",
+    days: aggregateForecasts(forecasts),
     fetchedAt: new Date().toISOString()
   };
   await put("weather", row);
