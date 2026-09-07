@@ -58,6 +58,7 @@ export function generatePackingRecommendations(trip, weather = null) {
     rec("id", "Dokumente", "Personalausweis / Reisepass", 1, "Stück", true, "Für die Reise griffbereit halten."),
     rec("driver", "Dokumente", "Führerschein", 1, "Stück", true, "Relevant, sobald du selbst fährst oder einen Mietwagen nutzt."),
     rec("insurance", "Dokumente", "Krankenversicherungskarte", 1, "Stück", true, "Für medizinische Versorgung unterwegs."),
+    rec("travel-insurance", "Dokumente", "Auslandskrankenversicherung / Versicherungsnachweis", 1, "Nachweis", true, "Vor Auslandsreisen prüfen, ob Versicherungsschutz besteht und der Nachweis griffbereit ist."),
     rec("booking", "Dokumente", "Buchungsunterlagen", 1, "Satz", true, "Unterkunft, Tickets und Reservierungen offline verfügbar halten."),
 
     rec("underwear", "Kleidung", "Unterwäsche", underwear, "Stück", false, `${days} Reisetage plus 1 Reserve.`),
