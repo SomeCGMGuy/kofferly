@@ -1,0 +1,36 @@
+.header-network-state{display:none!important}
+.brand-wordmark{padding:0;font-size:1.3rem;letter-spacing:-.03em}
+.notification-bell{position:relative;font-size:1.2rem}
+.notification-badge{position:absolute;right:-2px;top:-2px;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:var(--forest);color:white;border:2px solid var(--cream);font-size:.65rem;font-weight:900;line-height:14px;text-align:center}
+
+.mockup-countdown-card{margin-top:14px;padding:18px 20px;display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center;border-radius:24px;background:linear-gradient(135deg,#f7e3c8,#fff8ec);border:1px solid #efdab9;box-shadow:0 10px 28px rgba(70,58,34,.08)}
+.mockup-countdown-card.ready{background:linear-gradient(135deg,var(--sage),#fbfdfb);border-color:var(--forest-3)}
+.countdown-plane{width:52px;height:52px;border-radius:18px;display:grid;place-items:center;background:rgba(255,255,255,.7);color:var(--forest);font-size:1.7rem;transform:rotate(-8deg)}
+.countdown-copy{min-width:0}
+.countdown-copy .eyebrow{margin-bottom:5px}
+.countdown-copy h2{margin:0 0 5px;font-size:1.25rem;letter-spacing:-.02em}
+.countdown-copy p{margin:0;color:var(--muted);line-height:1.45}
+.countdown-link{border:0;background:transparent;color:var(--forest);font-weight:900;display:flex;align-items:center;gap:7px;padding:10px 4px;white-space:nowrap}
+.countdown-link span{font-size:1.1rem}
+
+.dashboard-grid .reminder{display:none}
+.hero .quick-actions{opacity:.92}
+
+.notification-dialog{width:min(100%,520px)}
+.notification-sheet{gap:12px}
+.notification-list{display:grid;gap:10px}
+.notification-item{display:grid;grid-template-columns:auto 1fr;gap:12px;padding:14px;border-radius:17px;border:1px solid var(--line);background:#fbfaf5}
+.notification-item.unread{background:var(--sage);border-color:var(--forest-3)}
+.notification-item-icon{width:38px;height:38px;border-radius:13px;display:grid;place-items:center;background:white;color:var(--forest);font-size:1.1rem;font-weight:900}
+.notification-item strong{display:block;margin-bottom:4px}
+.notification-item p,.notification-empty p{margin:0;color:var(--muted);font-size:.86rem;line-height:1.4}
+.notification-empty{padding:22px;text-align:center;border-radius:18px;background:#faf9f4}
+.notification-empty strong{display:block;margin-bottom:5px}
+
+@media (max-width:760px){
+  .topbar{padding-left:18px;padding-right:14px}
+  .topbar-actions{gap:8px}
+  .mockup-countdown-card{grid-template-columns:auto 1fr;padding:16px;gap:12px}
+  .countdown-plane{width:46px;height:46px;border-radius:15px}
+  .countdown-link{grid-column:2;justify-self:start;padding:2px 0 0}
+}

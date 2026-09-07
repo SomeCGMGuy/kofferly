@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.3.0 – 2026-09-07
+
+### Design
+- Header auf die Mockup-Hierarchie zurückgeführt: links nur noch `Kofferly`, rechts Benachrichtigungen und neue Reise.
+- Reisezielbild bleibt der emotionale Hero-Bereich.
+- Neue markante Countdown-/Statuskarte direkt unter dem Hero mit Flugzeugmotiv, offenen Punkten und direktem Sprung zur Packliste.
+- Erledigte Reisen wechseln in einen ruhigen `Alles bereit`-Zustand.
+- Bestehende detaillierte Dashboard-Funktionen bleiben erhalten und folgen unterhalb des emotionalen Einstiegs.
+
+### Neu
+- Lokale In-App-Benachrichtigungszentrale mit Glocke und Ungelesen-Zähler.
+- Hinweise für bevorstehende Abreise, offene Packpunkte und veraltete/fehlende Wetterdaten.
+- Gelesen/Ungelesen wird lokal in IndexedDB gespeichert, ohne Server oder Push-Dienst.
+- Eigene v0.3.0-Präsentationsschicht ergänzt, ohne Wetter- und Packlogik umzubauen.
+
+### PWA
+- Service-Worker-Cache auf `kofferly-shell-v4` angehoben.
+- Neue v0.3.0-JS-/CSS-Dateien werden offline vorgehalten.
+- Maskable-Icon-Trennung aus dem vorherigen Fix bleibt erhalten.
+
 ## 0.2.0 – 2026-09-07
 
 ### Behoben

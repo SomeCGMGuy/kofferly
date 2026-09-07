@@ -1,14 +1,16 @@
-const CACHE = "kofferly-shell-v3";
+const CACHE = "kofferly-shell-v4";
 const ASSETS = [
   "./",
   "./index.html",
   "./styles.css",
+  "./v030.css",
   "./manifest.webmanifest",
   "./icons/icon.svg",
   "./icons/icon-maskable.svg",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
   "./js/app.js",
+  "./js/v030.js",
   "./js/db.js",
   "./js/defaults.js",
   "./js/packing.js",
