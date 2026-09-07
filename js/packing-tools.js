@@ -11,6 +11,10 @@ function isSettingsView() {
   return view?.querySelector(".section-head h1")?.textContent?.trim() === "Einstellungen";
 }
 
+function isHomeView() {
+  return Boolean(view?.querySelector(".hero"));
+}
+
 function categoryNames() {
   return [...view.querySelectorAll(".category-title strong")]
     .map(el => el.textContent.trim())
@@ -68,6 +72,7 @@ function enhancePackingView() {
   if (!isPackingView()) return;
 
   view.querySelector(".pack-summary")?.remove();
+  view.querySelector("[data-action='regenerate-packing']")?.remove();
 
   if (!view.querySelector(".pack-search-bar")) {
     const sectionHead = view.querySelector(".section-head");
@@ -95,6 +100,11 @@ function enhancePackingView() {
   }
 }
 
+function simplifyHomeView() {
+  if (!isHomeView()) return;
+  view.querySelector("[data-action='refresh-image']")?.remove();
+}
+
 function simplifySettingsView() {
   if (!isSettingsView()) return;
 
@@ -102,11 +112,25 @@ function simplifySettingsView() {
     const eyebrow = card.querySelector(".eyebrow")?.textContent?.trim();
     if (eyebrow === "Intelligente Packliste") card.remove();
   }
+
+  const grid = view.querySelector(".settings-grid");
+  if (grid && !grid.querySelector("[data-app-reload-card]")) {
+    const card = document.createElement("section");
+    card.className = "setting-row card";
+    card.dataset.appReloadCard = "";
+    card.innerHTML = `
+      <div>
+        <h3>App neu laden</h3>
+        <p class="muted">Prüft auf eine neue Kofferly-Version und lädt die App vollständig neu. Deine Reisen und Packlisten bleiben gespeichert.</p>
+      </div>
+      <button class="button secondary" type="button" data-reload-app>Neu laden</button>
+    `;
+    grid.prepend(card);
+  }
 }
 
 function syncPullToRefresh() {
-  const activeRoute = document.querySelector(".nav-item.active")?.dataset.route;
-  const allow = activeRoute === "home";
+  const allow = isHomeView();
   document.documentElement.style.overscrollBehaviorY = allow ? "auto" : "none";
   document.body.style.overscrollBehaviorY = allow ? "auto" : "none";
 }
@@ -114,7 +138,56 @@ function syncPullToRefresh() {
 function enhanceCurrentView() {
   syncPullToRefresh();
   enhancePackingView();
+  simplifyHomeView();
   simplifySettingsView();
+}
+
+async function waitForWorker(worker) {
+  if (!worker || worker.state === "activated" || worker.state === "redundant") return;
+  await Promise.race([
+    new Promise(resolve => {
+      const onStateChange = () => {
+        if (worker.state === "activated" || worker.state === "redundant") {
+          worker.removeEventListener("statechange", onStateChange);
+          resolve();
+        }
+      };
+      worker.addEventListener("statechange", onStateChange);
+    }),
+    new Promise(resolve => setTimeout(resolve, 2500))
+  ]);
+}
+
+async function reloadApp(button) {
+  if (!navigator.onLine) {
+    const original = button.textContent;
+    button.textContent = "Offline";
+    setTimeout(() => { button.textContent = original; }, 1600);
+    return;
+  }
+
+  if (button.disabled) return;
+  button.disabled = true;
+  button.textContent = "Prüfe …";
+
+  try {
+    if ("caches" in window) {
+      const keys = await caches.keys();
+      await Promise.all(keys
+        .filter(key => key.startsWith("kofferly-shell-"))
+        .map(key => caches.delete(key)));
+    }
+
+    if ("serviceWorker" in navigator) {
+      const registration = await navigator.serviceWorker.register("./sw.js", { updateViaCache: "none" });
+      await registration.update();
+      await waitForWorker(registration.installing || registration.waiting);
+    }
+  } catch (error) {
+    console.warn("Kofferly update check failed; reloading from network.", error);
+  }
+
+  window.location.reload();
 }
 
 let scheduled = false;
@@ -135,6 +208,9 @@ document.addEventListener("input", event => {
 document.addEventListener("click", event => {
   if (event.target.closest("[data-quick-add-item]")) openQuickItem();
   if (event.target.closest("[data-quick-item-close]")) dialog.close("cancel");
+
+  const reloadButton = event.target.closest("[data-reload-app]");
+  if (reloadButton) reloadApp(reloadButton);
 });
 
 form?.addEventListener("submit", event => {
