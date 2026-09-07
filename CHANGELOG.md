@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.4.0 – 2026-09-07
+
+### Packliste
+- `Auslandskrankenversicherung / Versicherungsnachweis` als wichtiger Standardpunkt ergänzt.
+- Optionales Packprofil für neue Reisen ergänzt (`Keine Angabe`, `Damen`, `Herren`).
+- Beim Damen-Profil werden automatisch `Menstruations- / Hygieneartikel` unter Hygiene ergänzt.
+- Das Standardprofil für neue Reisen kann zusätzlich unter Einstellungen festgelegt werden.
+
+### Wetter & Rundreisen
+- Mehrere Wetterorte pro Reise unterstützt; Orte werden zeilenweise erfasst, z. B. Passau, Wien und Budapest bei einer Flusskreuzfahrt.
+- Für jede Station wird eine eigene Open-Meteo-Vorhersage geladen und lokal gespeichert.
+- Für die Packlogik werden die Wetterdaten entlang der Route konservativ zusammengeführt: höchste Regenwahrscheinlichkeit, niedrigste Temperatur und höchste Temperatur werden berücksichtigt.
+- Dadurch kann z. B. eine Regenjacke empfohlen werden, sobald eine Station entsprechend nasses Wetter erwarten lässt.
+- Auf der Übersicht werden bei Mehrort-Reisen die erkannten Stationen der Route angezeigt.
+- Bestehende Reisen mit nur einem Wetterort bleiben kompatibel.
+
+### PWA
+- Neues Modul `travel-profile.js` wird offline mit gecacht.
+- Service-Worker-Cache auf `kofferly-shell-v20` angehoben.
+
 ## 0.3.14 – 2026-09-07
 
 ### Updates
