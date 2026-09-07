@@ -24,3 +24,7 @@ Kofferly verwendet die kostenlosen Open-Meteo-Endpunkte für Ortssuche und Vorhe
 ## Datenschutz
 
 Es gibt kein Benutzerkonto, keine Werbung und keine Analyse-Tracker. Packlistenstatus, Reisedaten und Wetter-Cache liegen im `localStorage` des Browsers.
+
+## Branding – Forest Green
+
+Diese Ausgabe verwendet das festgelegte Kofferly-Branding: Forest Green (`#0F5132`), weißes K-Monogramm mit Gepäckgriff und warmem Sun-Akzent (`#F4C95D`). Das PWA-Icon-Set enthält Standard- und Maskable-Icons sowie ein Apple-Touch-Icon. Der App-Header verwendet dasselbe Markenicon wie der Homescreen.

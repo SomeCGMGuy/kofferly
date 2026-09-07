@@ -3,34 +3,20 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#0d7a5b">
+  <meta name="theme-color" content="#0F5132">
   <meta name="color-scheme" content="light">
   <meta name="description" content="Kofferly – offlinefähige Reise- und Packlisten-App mit gespeicherter Wettervorhersage.">
   <title>Kofferly</title>
   <link rel="manifest" href="./manifest.webmanifest">
-  <link rel="icon" href="./icons/icon-192.png">
-  <link rel="apple-touch-icon" href="./icons/icon-192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon.png">
   <link rel="stylesheet" href="./app.css">
 </head>
 <body>
   <div class="app-shell">
     <header class="topbar">
       <button class="brand" type="button" data-nav="overview" aria-label="Zur Übersicht">
-        <span class="brand-logo" aria-hidden="true">
-          <svg viewBox="0 0 64 64" role="img">
-            <defs>
-              <linearGradient id="mountain" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0" stop-color="#1b4d42"/><stop offset="1" stop-color="#0d7a5b"/>
-              </linearGradient>
-            </defs>
-            <rect x="2" y="2" width="60" height="60" rx="16" fill="#eaf3ed"/>
-            <circle cx="47" cy="16" r="6" fill="#f4b83f"/>
-            <path d="M8 39 22 22l7 9 8-13 19 21Z" fill="url(#mountain)"/>
-            <path d="m19 40 4-9 6 7 8-12 9 14Z" fill="#d7e7dd" opacity=".85"/>
-            <rect x="18" y="35" width="29" height="17" rx="4" fill="#fff" stroke="#0d4a3c" stroke-width="2.5"/>
-            <path d="M26 35v-3.5a5.5 5.5 0 0 1 11 0V35" fill="none" stroke="#0d4a3c" stroke-width="2.5" stroke-linecap="round"/>
-          </svg>
-        </span>
+        <span class="brand-logo" aria-hidden="true"><img src="./icons/icon-192.png" alt=""></span>
         <span class="brand-copy"><strong>Kofferly</strong><small>Packen. Los. Entdecken.</small></span>
       </button>
       <button id="settingsQuickBtn" class="icon-btn" type="button" aria-label="Einstellungen öffnen" title="Einstellungen">

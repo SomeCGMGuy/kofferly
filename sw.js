@@ -1,12 +1,18 @@
-const CACHE_NAME = "kofferly-shell-v1";
+const CACHE_NAME = "kofferly-shell-v2-forest-green";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./app.css",
   "./app.js",
   "./manifest.webmanifest",
+  "./icons/favicon-32.png",
+  "./icons/apple-touch-icon.png",
+  "./icons/icon-72.png",
+  "./icons/icon-96.png",
   "./icons/icon-192.png",
-  "./icons/icon-512.png"
+  "./icons/icon-512.png",
+  "./icons/icon-maskable-192.png",
+  "./icons/icon-maskable-512.png"
 ];
 
 self.addEventListener("install", event => {

@@ -1,4 +1,5 @@
 {
+  "id": "./",
   "name": "Kofferly – Packen. Los. Entdecken.",
   "short_name": "Kofferly",
   "description": "Offlinefähige Reise- und Packlisten-App mit gespeicherter Wettervorhersage.",
@@ -7,10 +8,12 @@
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#f4f6f5",
-  "theme_color": "#0d7a5b",
+  "background_color": "#F4F6F5",
+  "theme_color": "#0F5132",
   "icons": [
-    {"src":"./icons/icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},
-    {"src":"./icons/icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}
+    {"src":"./icons/icon-192.png","sizes":"192x192","type":"image/png","purpose":"any"},
+    {"src":"./icons/icon-512.png","sizes":"512x512","type":"image/png","purpose":"any"},
+    {"src":"./icons/icon-maskable-192.png","sizes":"192x192","type":"image/png","purpose":"maskable"},
+    {"src":"./icons/icon-maskable-512.png","sizes":"512x512","type":"image/png","purpose":"maskable"}
   ]
 }
