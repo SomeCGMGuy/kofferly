@@ -10,27 +10,19 @@ const esc = (value = "") => String(value).replace(/[&<>"']/g, ch => ({
 }[ch]));
 
 function fieldTitle(select) {
-  return select.dataset.androidSelect
-    || select.getAttribute("aria-label")
-    || select.closest("label")?.childNodes?.[0]?.textContent?.trim()
-    || "Auswählen";
+  return select.dataset.androidSelect || select.getAttribute("aria-label") || select.closest("label")?.childNodes?.[0]?.textContent?.trim() || "Auswählen";
 }
-
-function selectedLabel(select) {
-  return select.selectedOptions?.[0]?.textContent?.trim() || "Auswählen";
-}
-
-function selectButton(select) {
-  return select.nextElementSibling?.matches("[data-android-select-button]") ? select.nextElementSibling : null;
-}
-
+function selectedLabel(select) { return select.selectedOptions?.[0]?.textContent?.trim() || "Auswählen"; }
+function selectButton(select) { return select.nextElementSibling?.matches("[data-android-select-button]") ? select.nextElementSibling : null; }
 function syncSelectButton(select) {
   const button = selectButton(select);
   if (!button) return;
   button.querySelector("span").textContent = selectedLabel(select);
   button.disabled = select.disabled;
 }
-
+function syncAllSelectButtons(root = document) {
+  root.querySelectorAll?.("select[data-android-enhanced='true']").forEach(syncSelectButton);
+}
 function enhanceSelect(select) {
   if (select.dataset.androidEnhanced === "true" || select.multiple || select.size > 1) return;
   select.dataset.androidEnhanced = "true";
@@ -44,11 +36,7 @@ function enhanceSelect(select) {
   select.insertAdjacentElement("afterend", button);
   syncSelectButton(select);
 }
-
-function enhanceSelects(root = document) {
-  root.querySelectorAll?.("select").forEach(enhanceSelect);
-}
-
+function enhanceSelects(root = document) { root.querySelectorAll?.("select").forEach(enhanceSelect); }
 function renderChoices(select) {
   choiceTitle.textContent = fieldTitle(select);
   choiceOptions.innerHTML = [...select.options].map(option => `
@@ -58,14 +46,12 @@ function renderChoices(select) {
     </button>
   `).join("");
 }
-
 function openChoiceSheet(select) {
   syncSelectButton(select);
   activeSelect = select;
   renderChoices(select);
   choiceDialog.showModal();
 }
-
 function prepareSheet(dialog) {
   if (dialog.dataset.sheetReady === "true") return;
   dialog.dataset.sheetReady = "true";
@@ -89,13 +75,8 @@ function prepareSheet(dialog) {
       nativeClose(value);
     }, 210);
   };
-  dialog.addEventListener("cancel", event => {
-    event.preventDefault();
-    dialog.close("cancel");
-  });
-  dialog.addEventListener("pointerdown", event => {
-    if (event.target === dialog) dialog.dataset.backdropPointer = "true";
-  });
+  dialog.addEventListener("cancel", event => { event.preventDefault(); dialog.close("cancel"); });
+  dialog.addEventListener("pointerdown", event => { if (event.target === dialog) dialog.dataset.backdropPointer = "true"; });
   dialog.addEventListener("pointerup", event => {
     if (event.target === dialog && dialog.dataset.backdropPointer === "true") dialog.close("cancel");
     delete dialog.dataset.backdropPointer;
@@ -111,10 +92,7 @@ const observer = new MutationObserver(mutations => {
     if (mutation.target instanceof HTMLSelectElement) touchedSelects.add(mutation.target);
     mutation.addedNodes.forEach(node => {
       if (!(node instanceof Element)) return;
-      if (node.matches("select")) {
-        enhanceSelect(node);
-        touchedSelects.add(node);
-      }
+      if (node.matches("select")) { enhanceSelect(node); touchedSelects.add(node); }
       if (node.matches("option") && node.parentElement instanceof HTMLSelectElement) touchedSelects.add(node.parentElement);
       enhanceSelects(node);
     });
@@ -124,6 +102,9 @@ const observer = new MutationObserver(mutations => {
 observer.observe(document.body, { childList: true, subtree: true });
 
 document.addEventListener("click", event => {
+  if (event.target.closest("#openTripDialog,[data-action='new-trip']")) {
+    setTimeout(() => syncAllSelectButtons(document.querySelector("#tripDialog")), 150);
+  }
   const field = event.target.closest("[data-android-select-button]");
   if (field) {
     const select = field.previousElementSibling;
@@ -148,8 +129,7 @@ document.addEventListener("click", event => {
 document.addEventListener("change", event => {
   if (event.target.matches("select[data-android-enhanced='true']")) syncSelectButton(event.target);
 });
-
 document.addEventListener("reset", event => {
   if (!(event.target instanceof HTMLFormElement)) return;
-  setTimeout(() => event.target.querySelectorAll("select[data-android-enhanced='true']").forEach(syncSelectButton));
+  setTimeout(() => syncAllSelectButtons(event.target));
 }, true);
