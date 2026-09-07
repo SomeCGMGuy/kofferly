@@ -35,9 +35,9 @@ button:focus-visible,.button:focus-visible,.nav-item:focus-visible,input:focus-v
 .icon-button:active{transform:scale(.92)}
 .nav-item.active:active{background:var(--sage)}
 
-.app-shell{transition:transform .28s cubic-bezier(.22,.8,.25,1),opacity .28s ease,filter .28s ease}
-body.has-push-dialog .app-shell{transform:translateX(-7%);opacity:.82;filter:saturate(.94)}
-body.push-dialog-leaving .app-shell{transform:translateX(0);opacity:1;filter:none}
+.topbar,.view{transition:transform .28s cubic-bezier(.22,.8,.25,1),opacity .28s ease,filter .28s ease}
+body.has-push-dialog .topbar,body.has-push-dialog .view{transform:translateX(-7%);opacity:.82;filter:saturate(.94)}
+body.push-dialog-leaving .topbar,body.push-dialog-leaving .view{transform:translateX(0);opacity:1;filter:none}
 .modal.push-dialog{position:fixed;inset:0;width:100%;max-width:none;height:100dvh;max-height:none;margin:0;padding:0;border:0;background:transparent;overflow:hidden}
 .modal.push-dialog::backdrop{background:rgba(20,37,31,.12);backdrop-filter:none;transition:background .22s ease}
 .modal.push-dialog .modal-card{width:min(100%,980px);min-height:100dvh;max-height:100dvh;margin-left:auto;margin-right:0;padding:calc(22px + env(safe-area-inset-top,0px)) 22px calc(24px + env(safe-area-inset-bottom,0px));border-radius:0;overflow-y:auto;background:var(--paper);box-shadow:-22px 0 54px rgba(18,43,34,.10);transform:translateX(100%);opacity:.98;transition:transform .28s cubic-bezier(.22,.8,.25,1),opacity .2s ease}
@@ -81,7 +81,7 @@ body.push-dialog-leaving .app-shell{transform:translateX(0);opacity:1;filter:non
   .mockup-countdown-card{grid-template-columns:auto 1fr;padding:16px;gap:12px}
   .countdown-plane{width:46px;height:46px;border-radius:15px}
   .countdown-link{grid-column:2;justify-self:start;padding:2px 0 0}
-  body.has-push-dialog .app-shell{transform:translateX(-12%);opacity:.78}
+  body.has-push-dialog .topbar,body.has-push-dialog .view{transform:translateX(-12%);opacity:.78}
   .modal.push-dialog .modal-card{width:100%}
   .quick-add-task{right:16px;bottom:calc(80px + var(--safe-bottom));padding:12px 14px}
 }
@@ -93,7 +93,7 @@ body.push-dialog-leaving .app-shell{transform:translateX(0);opacity:1;filter:non
 }
 
 @media (prefers-reduced-motion:reduce){
-  .app-shell,button,.button,.nav-item,.countdown-link,.modal.push-dialog .modal-card{transition:none!important}
-  body.has-push-dialog .app-shell{transform:none;opacity:1;filter:none}
+  .topbar,.view,button,.button,.nav-item,.countdown-link,.modal.push-dialog .modal-card{transition:none!important}
+  body.has-push-dialog .topbar,body.has-push-dialog .view{transform:none;opacity:1;filter:none}
   .modal.push-dialog .modal-card{transform:none!important}
 }
