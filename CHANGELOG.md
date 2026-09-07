@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.7.0 – 2026-09-08
+
+### Onboarding
+- Neuer vierstufiger First-Run-Onboarding-Screen im Kofferly-Design.
+- Erklärt Reiseanlage, Reisenden- und Aktivitätsprofile, mehrere Wetterorte, intelligente Packliste, Erinnerungen, Offline-Nutzung, Backup und Updates.
+- Seiten lassen sich per Button, Fortschrittspunkten oder horizontaler Wischgeste wechseln.
+- Android-Zurück geht innerhalb des Onboardings zunächst eine Seite zurück und schließt es erst am Anfang.
+- `Überspringen` und `Los geht’s` speichern lokal, dass die Einführung abgeschlossen wurde; sie erscheint danach nicht erneut automatisch.
+- Unter Einstellungen kann die Einführung jederzeit über `Einführung > Ansehen` erneut geöffnet werden.
+- Hauptnavigation und eventuell geöffnete App-Dialoge bleiben während des First-Run-Flows vollständig ausgeblendet.
+
+### PWA
+- `onboarding.css` und `js/onboarding.js` werden offline vorgehalten.
+- Service-Worker-Cache auf `kofferly-shell-v30` angehoben.
+
 ## 0.6.0 – 2026-09-07
 
 ### Android UI
