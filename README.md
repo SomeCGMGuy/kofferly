@@ -1,6 +1,6 @@
 # Kofferly – Offline-first PWA
 
-Version **0.2.0**
+Version **0.3.0**
 
 Kofferly ist eine reine HTML/CSS/JavaScript-PWA ohne Build-Schritt.
 
@@ -16,32 +16,32 @@ Kofferly ist eine reine HTML/CSS/JavaScript-PWA ohne Build-Schritt.
 - mengenbasierte Packempfehlung aus Reisedauer, Zieltyp und Wetter
 - kurze Begründungen für automatisch empfohlene Mengen
 - Erinnerungslogik abhängig vom Abreisedatum
+- In-App-Benachrichtigungen mit lokalem Gelesen/Ungelesen-Status
+- Filter für Benachrichtigungen: Alle, Wichtig und Tipps
+- „Noch etwas zu erledigen“-Karte mit Flugzeug und Abreise-Countdown nach Mockup-Referenz
+- Detailansicht für offene Packkategorien
 - Löschbestätigung für Reisen und Packlisteneinträge
 - responsives Kofferly-Design in Forest Green
+- separates maskable App-Icon mit Safe-Zone für Android-Launcher wie Xiaomi/HyperOS
 - Design-Mockups im Projekt unter `docs/mockups/`
 
 ## Starten
 
-PWA-Funktionen benötigen HTTP(S). Nicht direkt `index.html` per `file://` öffnen.
+Kofferly benötigt einen lokalen Webserver, weil Service Worker und ES-Module nicht zuverlässig über `file://` funktionieren.
 
-### Python
+Beispiel mit Python:
 
 ```bash
-cd kofferly-pwa
 python -m http.server 8080
 ```
 
-Dann `http://localhost:8080` öffnen.
-
-### Node
+oder mit Node:
 
 ```bash
 npx serve .
 ```
 
-## Android installieren
-
-In Chrome die Seite öffnen und „App installieren“ / „Zum Startbildschirm hinzufügen“ wählen.
+Danach im Browser öffnen und die PWA über „App installieren“ bzw. „Zum Startbildschirm hinzufügen“ installieren.
 
 ## Wetter
 
@@ -57,11 +57,21 @@ Beim Anlegen einer Reise erzeugt Kofferly eine lokale Empfehlung mit Mengen. Bei
 
 Sobald Wetterdaten für den Reisezeitraum vorhanden sind, können zusätzliche Empfehlungen einfließen, z. B. Regenjacke, Fleece, Badebekleidung oder Sonnenschutz. Eigene Einträge bleiben bei einer Aktualisierung erhalten.
 
+## Benachrichtigungen
+
+Die Glocke im Header sammelt lokale Hinweise zu Abreise, offenen Packpunkten, dem letzten Check und Reisetipps. Die Meldungen funktionieren ohne Server. Der Gelesen/Ungelesen-Status und die Auswahl der Benachrichtigungsarten werden in IndexedDB gespeichert.
+
+Es handelt sich bewusst um **In-App-Benachrichtigungen**. Ohne Push-Server kann Android eine vollständig geschlossene PWA nicht zuverlässig zu einem bestimmten Zeitpunkt wecken.
+
+## App-Icon auf Android
+
+Normale Icons (`purpose: any`) und das maskierbare Icon (`purpose: maskable`) sind getrennt. Das maskierbare Motiv liegt deutlich innerhalb der Safe-Zone, damit Launcher mit aggressiver Rundung oder Zuschnitt – etwa auf manchen Xiaomi-/HyperOS-Geräten – das Koffer-Motiv nicht hineinzoomen oder abschneiden.
+
+Nach einer Icon-Änderung kann es nötig sein, die bereits installierte PWA einmal zu entfernen und neu zu installieren, weil Android Launcher-Icons stark cacht.
+
 ## Offline-Verhalten
 
 Nach dem ersten Laden wird die App-Shell durch den Service Worker gecacht. Reisen und Packlisten liegen lokal in IndexedDB. Reisezielbilder werden online geladen, auf ca. 1600 px Breite reduziert und als JPEG-Blob in IndexedDB gespeichert.
-
-Es gibt absichtlich keinen Push-Server. Erinnerungen werden beim Öffnen der App anhand des Abreisedatums berechnet.
 
 ## Designreferenz
 
