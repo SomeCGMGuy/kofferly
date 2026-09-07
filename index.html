@@ -145,6 +145,23 @@
     </form>
   </dialog>
 
+  <dialog id="installPromptDialog" class="modal">
+    <section class="modal-card compact">
+      <div class="modal-head">
+        <div>
+          <p class="eyebrow">Kofferly für dein Smartphone</p>
+          <h2>Als App installieren?</h2>
+        </div>
+        <button class="icon-button" type="button" data-install-remind-later aria-label="Später">×</button>
+      </div>
+      <p class="muted">Installiere Kofferly auf deinem Homescreen. Dann öffnet es sich wie eine normale App und bleibt auch offline verfügbar.</p>
+      <div class="modal-actions">
+        <button type="button" class="button ghost" data-install-remind-later>Später</button>
+        <button type="button" class="button primary" data-install-prompt-now>Jetzt installieren</button>
+      </div>
+    </section>
+  </dialog>
+
   <template id="emptyTemplate">
     <section class="empty-state card">
       <div class="empty-illustration">🧳</div>
