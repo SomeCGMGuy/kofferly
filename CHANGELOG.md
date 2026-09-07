@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.8 – 2026-09-07
+
+### Übersicht
+- Countdown-/Statuskarte bleibt beim Wechsel von der Packliste zurück zur Übersicht ohne sichtbares Verschwinden stehen.
+- Der zuletzt bekannte Reisezustand wird synchron im selben Render-Zyklus wieder eingesetzt, statt erst nach einem erneuten IndexedDB-Lesevorgang.
+- Benachrichtigungen und Statusdaten werden danach weiterhin im Hintergrund der UI-Aktualisierung frisch aus IndexedDB gelesen.
+
+### PWA
+- Service-Worker-Cache auf `kofferly-shell-v12` angehoben.
+
 ## 0.3.7 – 2026-09-07
 
 ### Packliste
