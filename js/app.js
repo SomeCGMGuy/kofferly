@@ -40,6 +40,17 @@ function escapeHtml(value = "") {
   }[ch]));
 }
 
+function visibleWeatherLocation(value = "") {
+  return String(value)
+    .split(/\r?\n/)
+    .filter(line => {
+      const trimmed = line.trim();
+      return !trimmed.startsWith("@profile:") && !trimmed.startsWith("@activities:");
+    })
+    .join("\n")
+    .trim();
+}
+
 function formatDate(dateString, options = { day:"2-digit", month:"long", year:"numeric" }) {
   if (!dateString) return "";
   return new Intl.DateTimeFormat("de-DE", options).format(new Date(`${dateString}T12:00:00`));
@@ -393,7 +404,7 @@ function renderHome() {
           ${state.weatherError ? `<div class="weather-error">${escapeHtml(state.weatherError)}</div>` : ""}
 
           <form id="weatherLocationForm" class="weather-location-form">
-            <input name="weatherLocation" value="${escapeHtml(trip.weatherLocation || "")}" placeholder="Wetterort präzisieren, z. B. Dorf Tirol" aria-label="Wetterort">
+            <input name="weatherLocation" value="${escapeHtml(visibleWeatherLocation(trip.weatherLocation || ""))}" placeholder="Wetterort präzisieren, z. B. Dorf Tirol" aria-label="Wetterort">
             <button class="button small ghost">Wetterort speichern</button>
           </form>
         </section>
