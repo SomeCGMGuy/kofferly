@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.3.1 – 2026-09-07
+
+### UX
+- Alle Dialoge verwenden jetzt ein gemeinsames Push-Navigationsmuster: neue Oberfläche fährt von rechts ein, die bestehende Ansicht weicht leicht nach links aus.
+- Schließen, Abbrechen, ESC/Zurück und Backdrop-Tap laufen über die gleiche Rückwärtsanimation.
+- Dialoge erscheinen als vollwertige App-Screens statt als schwebende Browser-Modals.
+- Overlays deutlich zurückgenommen; die darunterliegende App bleibt als räumlicher Kontext sichtbar.
+- Auffälligen Browser-Tap-Highlight auf Buttons und Navigation entfernt.
+- Dezentes App-artiges Touch-Feedback mit kurzer Skalierung/Opacity statt großflächiger Overlay-Effekte.
+- Fokusdarstellung für Tastaturbedienung bleibt über `:focus-visible` erhalten.
+- `prefers-reduced-motion` wird berücksichtigt.
+
+### PWA
+- Service-Worker-Cache auf `kofferly-shell-v5` angehoben.
+- Neue Push-Navigationslogik wird offline mit gecacht.
+
 ## 0.3.0 – 2026-09-07
 
 ### Design
