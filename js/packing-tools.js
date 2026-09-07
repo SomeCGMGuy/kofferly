@@ -13,9 +13,15 @@ function categoryNames() {
     .filter(Boolean);
 }
 
+function escapeHtml(value = "") {
+  return String(value).replace(/[&<>"']/g, ch => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+  }[ch]));
+}
+
 function populateCategories() {
   const categories = [...new Set([...categoryNames(), "Sonstiges"])];
-  categorySelect.innerHTML = categories.map(category => `<option>${category.replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[ch]))}</option>`).join("");
+  categorySelect.innerHTML = categories.map(category => `<option>${escapeHtml(category)}</option>`).join("");
 }
 
 function openQuickItem() {
@@ -100,9 +106,8 @@ document.addEventListener("input", event => {
 
 document.addEventListener("click", event => {
   if (event.target.closest("[data-quick-add-item]")) openQuickItem();
+  if (event.target.closest("[data-quick-item-close]")) dialog.close("cancel");
 });
-
-document.querySelector("[data-quick-item-close]")?.addEventListener("click", () => dialog.close("cancel"));
 
 form?.addEventListener("submit", event => {
   event.preventDefault();
