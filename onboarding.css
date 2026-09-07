@@ -1,0 +1,35 @@
+/* First-run onboarding. Full-screen by design: this is an app start experience, not a modal. */
+.onboarding-shell[hidden]{display:none!important}
+.onboarding-shell{position:fixed;inset:0;z-index:120;background:var(--cream);color:var(--ink);overflow:hidden;touch-action:pan-y}
+body.onboarding-open{overflow:hidden}
+body.onboarding-open #app{visibility:hidden}
+.onboarding-frame{width:min(100%,720px);height:100%;margin:0 auto;display:grid;grid-template-rows:auto minmax(0,1fr) auto;padding:calc(18px + env(safe-area-inset-top,0px)) 22px calc(18px + env(safe-area-inset-bottom,0px))}
+.onboarding-top{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:48px}
+.onboarding-brand{font-size:1.32rem;font-weight:900;letter-spacing:-.035em;color:var(--forest)}
+.onboarding-skip{border:0;background:transparent;color:var(--forest);font:inherit;font-weight:800;min-height:44px;padding:0 4px}
+.onboarding-stage{position:relative;min-height:0;display:grid;align-items:center;overflow:hidden}
+.onboarding-slide{grid-area:1/1;padding:18px 0 24px;opacity:0;transform:translateX(34px);pointer-events:none;transition:opacity .22s ease,transform .28s cubic-bezier(.22,.8,.25,1)}
+.onboarding-slide.is-active{opacity:1;transform:translateX(0);pointer-events:auto}
+.onboarding-slide.is-before{transform:translateX(-34px)}
+.onboarding-visual{width:min(72vw,310px);aspect-ratio:1;margin:0 auto 30px;border-radius:34%;display:grid;place-items:center;background:linear-gradient(145deg,#e7efe9,#fbf8ef);box-shadow:0 24px 70px rgba(31,79,63,.13);position:relative;overflow:hidden}
+.onboarding-visual::after{content:"";position:absolute;width:68%;height:68%;border-radius:50%;background:rgba(33,79,63,.055);right:-20%;bottom:-18%}
+.onboarding-visual svg{width:52%;height:52%;fill:none;stroke:var(--forest);stroke-width:1.65;stroke-linecap:round;stroke-linejoin:round;position:relative;z-index:1}
+.onboarding-copy{text-align:center;max-width:520px;margin:0 auto}
+.onboarding-copy .eyebrow{margin-bottom:9px}
+.onboarding-copy h1{margin:0 0 13px;font-size:clamp(2rem,8vw,3.2rem);line-height:1.02;letter-spacing:-.045em}
+.onboarding-copy p{margin:0 auto;color:var(--muted);font-size:1rem;line-height:1.55;max-width:470px}
+.onboarding-feature-row{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:20px}
+.onboarding-chip{display:inline-flex;align-items:center;min-height:34px;padding:6px 10px;border-radius:999px;background:var(--sage);color:var(--forest);font-size:.78rem;font-weight:800}
+.onboarding-footer{display:grid;gap:16px;padding-top:10px}
+.onboarding-progress{display:flex;justify-content:center;gap:7px}
+.onboarding-dot{width:7px;height:7px;border:0;border-radius:999px;background:#bdc9c2;padding:0;transition:width .2s ease,background .2s ease}
+.onboarding-dot.is-active{width:24px;background:var(--forest)}
+.onboarding-actions{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center}
+.onboarding-back{border:0;background:transparent;color:var(--forest);font:inherit;font-weight:800;min-height:52px;padding:0 14px;visibility:hidden}
+.onboarding-back.is-visible{visibility:visible}
+.onboarding-next{min-height:54px;border:0;border-radius:17px;background:var(--forest);color:white;font:inherit;font-weight:900;font-size:1rem;padding:0 22px;box-shadow:0 12px 28px rgba(31,79,63,.22)}
+.onboarding-next:active,.onboarding-skip:active,.onboarding-back:active{transform:scale(.98);opacity:.82}
+.onboarding-setting-icon{width:44px;height:44px;border-radius:15px;background:var(--sage);color:var(--forest);display:grid;place-items:center;flex:0 0 auto}
+.onboarding-setting-icon svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+@media (max-height:690px){.onboarding-visual{width:min(48vw,220px);margin-bottom:18px}.onboarding-copy h1{font-size:clamp(1.7rem,7vw,2.5rem)}.onboarding-slide{padding-top:8px}.onboarding-feature-row{margin-top:12px}}
+@media (prefers-reduced-motion:reduce){.onboarding-slide,.onboarding-dot{transition:none!important}}
