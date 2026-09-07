@@ -1,5 +1,5 @@
 const appShell = document.querySelector("#app");
-const dialogs = [...document.querySelectorAll("dialog.modal")];
+const dialogs = [...document.querySelectorAll("dialog.modal:not(#notificationDialog)")];
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 const CLOSE_MS = 230;
 
