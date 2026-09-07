@@ -7,6 +7,10 @@ function isPackingView() {
   return view?.querySelector(".section-head h1")?.textContent?.trim() === "Packliste";
 }
 
+function isSettingsView() {
+  return view?.querySelector(".section-head h1")?.textContent?.trim() === "Einstellungen";
+}
+
 function categoryNames() {
   return [...view.querySelectorAll(".category-title strong")]
     .map(el => el.textContent.trim())
@@ -63,8 +67,10 @@ function applySearch(query) {
 function enhancePackingView() {
   if (!isPackingView()) return;
 
+  view.querySelector(".pack-summary")?.remove();
+
   if (!view.querySelector(".pack-search-bar")) {
-    const summary = view.querySelector(".pack-summary");
+    const sectionHead = view.querySelector(".section-head");
     const search = document.createElement("section");
     search.className = "pack-search-bar card";
     search.innerHTML = `
@@ -75,7 +81,7 @@ function enhancePackingView() {
       </label>
       <p class="pack-search-empty" data-pack-search-empty hidden>Keine passende Aufgabe gefunden.</p>
     `;
-    summary?.insertAdjacentElement("afterend", search);
+    sectionHead?.insertAdjacentElement("afterend", search);
   }
 
   if (!view.querySelector(".quick-add-task")) {
@@ -89,13 +95,27 @@ function enhancePackingView() {
   }
 }
 
+function simplifySettingsView() {
+  if (!isSettingsView()) return;
+
+  for (const card of view.querySelectorAll(".settings-grid .info-card")) {
+    const eyebrow = card.querySelector(".eyebrow")?.textContent?.trim();
+    if (eyebrow === "Intelligente Packliste") card.remove();
+  }
+}
+
+function enhanceCurrentView() {
+  enhancePackingView();
+  simplifySettingsView();
+}
+
 let scheduled = false;
 const observer = new MutationObserver(() => {
   if (scheduled) return;
   scheduled = true;
   queueMicrotask(() => {
     scheduled = false;
-    enhancePackingView();
+    enhanceCurrentView();
   });
 });
 observer.observe(view, { childList: true, subtree: true });
@@ -124,4 +144,4 @@ form?.addEventListener("submit", event => {
   existing.requestSubmit();
 });
 
-enhancePackingView();
+enhanceCurrentView();
