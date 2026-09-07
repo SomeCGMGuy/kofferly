@@ -62,15 +62,26 @@
       </label>
 
       <label>
-        Packprofil <span class="label-hint">optional</span>
+        Reisende <span class="label-hint">optional</span>
         <select id="tripPackProfile" name="packProfile">
           <option value="neutral">Keine Angabe</option>
-          <option value="women">Damen</option>
-          <option value="men">Herren</option>
+          <option value="women">Dame</option>
+          <option value="men">Herr</option>
           <option value="couple">Paar</option>
         </select>
-        <small class="field-help">Das Paar-Profil rechnet persönliche Mengen für zwei Reisende. Damen- und Paar-Profil ergänzen außerdem persönliche Hygieneartikel.</small>
+        <small class="field-help">Das Paar-Profil rechnet personenbezogene Mengen für zwei Reisende.</small>
       </label>
+
+      <section class="activity-picker" aria-labelledby="activityPickerTitle">
+        <div class="activity-picker-head">
+          <div>
+            <strong id="activityPickerTitle">Interessen & Aktivitäten</strong>
+            <small class="field-help">Mehrere Profile können kombiniert werden.</small>
+          </div>
+        </div>
+        <input id="activityProfileSearch" type="search" placeholder="Profile durchsuchen …" autocomplete="off" aria-label="Aktivitätsprofile durchsuchen" />
+        <div id="activityProfileChoices" class="activity-profile-choices"></div>
+      </section>
 
       <label>
         Wetterorte <span class="label-hint">optional</span>
@@ -152,6 +163,36 @@
       <div class="modal-actions">
         <button type="button" class="button ghost" data-quick-item-close>Abbrechen</button>
         <button type="submit" class="button primary">Hinzufügen</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="activityProfileDialog" class="modal">
+    <form id="activityProfileForm" class="modal-card">
+      <div class="modal-head">
+        <div>
+          <p class="eyebrow">Aktivitätsprofil</p>
+          <h2 id="activityProfileEditorTitle">Profil bearbeiten</h2>
+        </div>
+        <button class="icon-button" type="button" data-profile-editor-close aria-label="Schließen">×</button>
+      </div>
+      <input type="hidden" name="profileId" />
+      <label>
+        Name
+        <input name="profileName" required placeholder="z. B. Tauchen" autocomplete="off" />
+      </label>
+      <label>
+        Beschreibung <span class="label-hint">optional</span>
+        <textarea name="profileDescription" rows="2" placeholder="Wann ist dieses Profil sinnvoll?"></textarea>
+      </label>
+      <div class="profile-items-head">
+        <strong>Packeinträge</strong>
+        <button class="button small ghost" type="button" data-profile-item-add>+ Eintrag</button>
+      </div>
+      <div id="activityProfileItems" class="profile-editor-items"></div>
+      <div class="modal-actions">
+        <button type="button" class="button ghost" data-profile-editor-close>Abbrechen</button>
+        <button type="submit" class="button primary">Profil speichern</button>
       </div>
     </form>
   </dialog>
