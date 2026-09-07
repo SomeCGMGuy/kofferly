@@ -14,6 +14,17 @@ function completed() {
   return localStorage.getItem(DONE_KEY) === "done";
 }
 
+function clarifyHostingCopy() {
+  const welcome = slides[0];
+  if (!welcome) return;
+  const body = welcome.querySelector(".onboarding-copy > p:not(.eyebrow)");
+  const chips = [...welcome.querySelectorAll(".onboarding-chip")];
+  if (body) body.textContent = "Kofferly läuft als Web-App über GitHub Pages. Deine Reisen und Packlisten werden direkt auf deinem Gerät gespeichert – ohne Konto.";
+  if (chips[0]) chips[0].textContent = "GitHub Pages";
+  if (chips[1]) chips[1].textContent = "Ohne Konto";
+  if (chips[2]) chips[2].textContent = "Daten lokal";
+}
+
 function renderStep() {
   slides.forEach((slide, index) => {
     slide.classList.toggle("is-active", index === step);
@@ -156,6 +167,7 @@ overlay?.addEventListener("pointerup", event => {
   else previousStep();
 });
 
+clarifyHostingCopy();
 renderStep();
 addSettingsReplay();
 requestAnimationFrame(() => openOnboarding());
