@@ -2,7 +2,11 @@ const view = document.querySelector("#view");
 const dialog = document.querySelector("#quickItemDialog");
 const form = document.querySelector("#quickItemForm");
 const categorySelect = document.querySelector("#quickItemCategory");
+const installDialog = document.querySelector("#installPromptDialog");
+const INSTALL_SNOOZE_KEY = "kofferlyInstallPromptSnoozeUntil";
+const INSTALL_SNOOZE_MS = 7 * 24 * 60 * 60 * 1000;
 let installPrompt = null;
+let installPromptShownThisSession = false;
 
 function isPackingView() {
   return view?.querySelector(".section-head h1")?.textContent?.trim() === "Packliste";
@@ -18,6 +22,27 @@ function isHomeView() {
 
 function isInstalledPwa() {
   return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+}
+
+function installPromptIsSnoozed() {
+  const until = Number(localStorage.getItem(INSTALL_SNOOZE_KEY) || 0);
+  return Number.isFinite(until) && until > Date.now();
+}
+
+function snoozeInstallPrompt() {
+  localStorage.setItem(INSTALL_SNOOZE_KEY, String(Date.now() + INSTALL_SNOOZE_MS));
+}
+
+function clearInstallSnooze() {
+  localStorage.removeItem(INSTALL_SNOOZE_KEY);
+}
+
+function maybeShowInstallPrompt() {
+  if (!installDialog || !installPrompt || isInstalledPwa() || installPromptIsSnoozed() || installPromptShownThisSession) return;
+  installPromptShownThisSession = true;
+  setTimeout(() => {
+    if (!installDialog.open && installPrompt && !isInstalledPwa()) installDialog.showModal();
+  }, 700);
 }
 
 function categoryNames() {
@@ -216,7 +241,7 @@ function enhanceCurrentView() {
   simplifySettingsView();
 }
 
-async function installApp(button) {
+async function installApp(button, closePromptDialog = false) {
   if (!installPrompt) {
     renderInstallCard();
     return;
@@ -226,7 +251,10 @@ async function installApp(button) {
   const prompt = installPrompt;
   installPrompt = null;
   await prompt.prompt();
-  await prompt.userChoice.catch(() => null);
+  const choice = await prompt.userChoice.catch(() => null);
+
+  if (choice?.outcome === "dismissed") snoozeInstallPrompt();
+  if (closePromptDialog && installDialog?.open) installDialog.close(choice?.outcome || "dismissed");
   renderInstallCard();
 }
 
@@ -282,10 +310,13 @@ window.addEventListener("beforeinstallprompt", event => {
   event.preventDefault();
   installPrompt = event;
   renderInstallCard();
+  maybeShowInstallPrompt();
 });
 
 window.addEventListener("appinstalled", () => {
   installPrompt = null;
+  clearInstallSnooze();
+  if (installDialog?.open) installDialog.close("installed");
   renderInstallCard();
 });
 
@@ -307,6 +338,15 @@ document.addEventListener("input", event => {
 document.addEventListener("click", event => {
   if (event.target.closest("[data-quick-add-item]")) openQuickItem();
   if (event.target.closest("[data-quick-item-close]")) dialog.close("cancel");
+
+  const remindLater = event.target.closest("[data-install-remind-later]");
+  if (remindLater) {
+    snoozeInstallPrompt();
+    if (installDialog?.open) installDialog.close("later");
+  }
+
+  const promptInstallButton = event.target.closest("[data-install-prompt-now]");
+  if (promptInstallButton) installApp(promptInstallButton, true);
 
   const installButton = event.target.closest("[data-install-app]");
   if (installButton) installApp(installButton);
