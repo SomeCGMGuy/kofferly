@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.3.2 – 2026-09-07
+
+### Behoben
+- Lange Packlisteneinträge umbrechen sauber und ragen nicht mehr in Mengen- oder `wichtig`-Badges hinein.
+- Auf sehr schmalen Displays rücken Mengen-/Statusbadges unter den Text, statt ihn zusammenzudrücken.
+
+### Neu
+- Lokales vollständiges Backup als Kofferly-JSON in den Einstellungen.
+- Backup enthält Reisen, Packlisten, Einstellungen, Wetter-Cache und gespeicherte Reisezielbilder.
+- Reisezielbilder werden binär sicher im Backup eingebettet und beim Restore wieder als Blob hergestellt.
+- Restore validiert das Dateiformat vor dem Import und verlangt eine Bestätigung, bevor lokale Daten ersetzt werden.
+- Nach erfolgreichem Restore wird Kofferly neu geladen und arbeitet mit dem wiederhergestellten Datenbestand weiter.
+
+### PWA
+- Service-Worker-Cache auf `kofferly-shell-v6` angehoben.
+- Backup-/Restore-Modul wird offline mit gecacht.
+
 ## 0.3.1 – 2026-09-07
 
 ### UX
