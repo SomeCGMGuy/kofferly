@@ -22,7 +22,8 @@ function splitWeatherLocations(value = "") {
   return [...new Set(String(value)
     .split(/\r?\n|;/)
     .map(part => part.trim())
-    .filter(Boolean))];
+    .filter(Boolean)
+    .filter(part => !part.startsWith("@profile:")))];
 }
 
 function weatherQueries(trip) {
