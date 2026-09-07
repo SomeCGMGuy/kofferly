@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.3.14 – 2026-09-07
+
+### Updates
+- PWA-Updatepfad für Brave/Chromium robuster gemacht.
+- App-Dateien werden online nun immer zuerst aus dem Netzwerk geladen und dabei der Browser-HTTP-Cache umgangen.
+- Erfolgreich geladene Dateien werden weiterhin im Kofferly-PWA-Cache gespeichert, damit die App offline funktioniert.
+- Wird ein neuer Service Worker aktiviert, werden geöffnete Kofferly-Fenster einmal automatisch neu geladen, damit der neue Git-Stand direkt übernommen wird.
+- Manuelles Löschen des Brave-Caches sollte damit künftig nicht mehr nötig sein.
+
+### PWA
+- Service-Worker-Cache auf `kofferly-shell-v18` angehoben.
+
 ## 0.3.13 – 2026-09-07
 
 ### PWA-Installation
