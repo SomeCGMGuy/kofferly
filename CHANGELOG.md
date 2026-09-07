@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.6 – 2026-09-07
+
+### Bedienung
+- Pinch-Zoom und Doppeltipp-Zoom in der App deaktiviert, damit sich Kofferly wie eine installierte native App verhält.
+- Scrollen, Tippen und normale Touch-Bedienung bleiben unverändert nutzbar.
+
+### PWA
+- Viewport auf feste Skalierung (`maximum-scale=1`, `user-scalable=no`) umgestellt.
+- Service-Worker-Cache auf `kofferly-shell-v10` angehoben.
+
 ## 0.3.5 – 2026-09-07
 
 ### Navigation
