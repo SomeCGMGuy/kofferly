@@ -23,7 +23,7 @@ function splitWeatherLocations(value = "") {
     .split(/\r?\n|;/)
     .map(part => part.trim())
     .filter(Boolean)
-    .filter(part => !part.startsWith("@profile:")))];
+    .filter(part => !part.startsWith("@")))];
 }
 
 function weatherQueries(trip) {
