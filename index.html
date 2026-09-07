@@ -58,13 +58,13 @@
 
       <label>
         Reiseziel
-        <input id="tripDestination" name="destination" required placeholder="z. B. Südtirol" autocomplete="off" />
+        <input id="tripDestination" name="destination" required placeholder="z. B. Südtirol oder Donaukreuzfahrt" autocomplete="off" />
       </label>
 
       <label>
-        Wetterort <span class="label-hint">optional</span>
-        <input id="tripWeatherLocation" name="weatherLocation" placeholder="z. B. Dorf Tirol – falls das Ziel eine Region ist" autocomplete="off" />
-        <small class="field-help">Leer lassen, wenn dein Reiseziel bereits ein konkreter Ort ist.</small>
+        Wetterorte <span class="label-hint">optional</span>
+        <textarea id="tripWeatherLocation" name="weatherLocation" rows="3" placeholder="Ein Ort pro Zeile, z. B.&#10;Passau&#10;Wien&#10;Budapest" autocomplete="off"></textarea>
+        <small class="field-help">Für Rundreisen oder Kreuzfahrten kannst du mehrere Stationen angeben. Kofferly berücksichtigt für die Packliste den ungünstigsten Wetterfall entlang der Route.</small>
       </label>
 
       <label>
@@ -177,5 +177,6 @@
   <script type="module" src="./js/v030.js"></script>
   <script type="module" src="./js/backup.js"></script>
   <script type="module" src="./js/packing-tools.js"></script>
+  <script type="module" src="./js/travel-profile.js"></script>
 </body>
 </html>
