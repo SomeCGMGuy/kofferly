@@ -21,6 +21,13 @@ function destinationProfile(destination = "") {
   };
 }
 
+function tripPackProfile(trip) {
+  const marker = String(trip?.weatherLocation || "")
+    .split(/\r?\n/)
+    .find(line => line.trim().startsWith("@profile:"));
+  return marker ? marker.trim().slice("@profile:".length) : "neutral";
+}
+
 export function weatherSummaryForTrip(trip, weather) {
   if (!weather?.days?.length || !trip?.date) return null;
   const start = trip.date;
@@ -46,6 +53,7 @@ function rec(key, category, name, quantity, unit, important = false, reason = ""
 export function generatePackingRecommendations(trip, weather = null) {
   const { days, nights } = tripLength(trip);
   const profile = destinationProfile(trip.destination);
+  const packProfile = tripPackProfile(trip);
   const wx = weatherSummaryForTrip(trip, weather);
 
   const underwear = days + 1;
@@ -82,6 +90,10 @@ export function generatePackingRecommendations(trip, weather = null) {
     rec("bottle", "Unterwegs", "Trinkflasche", 1, "Stück", false, ""),
     rec("snacks", "Unterwegs", "Snacks für die Anreise", 2, "Portionen", false, "Eine Portion für unterwegs, eine kleine Reserve.")
   ];
+
+  if (packProfile === "women") {
+    items.push(rec("women-hygiene", "Hygiene", "Menstruations- / Hygieneartikel", 1, "Set", false, "Aus dem Damen-Packprofil für diese Reise ergänzt."));
+  }
 
   if (profile.mountain) {
     items.push(
