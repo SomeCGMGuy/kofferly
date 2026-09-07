@@ -56,12 +56,13 @@ async function injectProfileSetting() {
     card.innerHTML = `
       <div>
         <h3>Packprofil für neue Reisen</h3>
-        <p class="muted">Optional. Beim Damen-Profil ergänzt Kofferly persönliche Hygieneartikel automatisch. Das Profil wird nur für neu angelegte Reisen übernommen.</p>
+        <p class="muted">Optional. Das Paar-Profil rechnet mit zwei Reisenden; beim Damen- und Paar-Profil ergänzt Kofferly persönliche Hygieneartikel automatisch.</p>
       </div>
       <select data-pack-profile aria-label="Packprofil für neue Reisen">
         <option value="neutral" ${profile === "neutral" ? "selected" : ""}>Keine Angabe</option>
         <option value="women" ${profile === "women" ? "selected" : ""}>Damen</option>
         <option value="men" ${profile === "men" ? "selected" : ""}>Herren</option>
+        <option value="couple" ${profile === "couple" ? "selected" : ""}>Paar</option>
       </select>
     `;
 
