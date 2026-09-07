@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.3.13 – 2026-09-07
+
+### PWA-Installation
+- Beim Öffnen kann Kofferly nun automatisch fragen, ob die App auf dem Homescreen installiert werden soll.
+- Der Hinweis erscheint nur, wenn der Browser Kofferly tatsächlich als installierbare PWA meldet und Kofferly noch nicht im Standalone-Modus läuft.
+- `Jetzt installieren` öffnet den nativen PWA-Installationsdialog.
+- `Später` bzw. Schließen blendet den Hinweis für sieben Tage aus, damit er nicht bei jedem Start erneut stört.
+- Die Installationskarte in den Einstellungen bleibt unabhängig davon weiterhin verfügbar.
+- Nach erfolgreicher Installation wird der Hinweis nicht mehr angezeigt.
+
+### PWA
+- Service-Worker-Cache auf `kofferly-shell-v17` angehoben.
+
 ## 0.3.12 – 2026-09-07
 
 ### Einstellungen
