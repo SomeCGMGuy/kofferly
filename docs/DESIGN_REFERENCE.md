@@ -1,30 +1,61 @@
-# Kofferly – Design Reference
+# Kofferly – Designreferenz
 
-Diese Datei und die Mockups in `docs/mockups/` sind die visuelle Soll-Referenz für die weitere Entwicklung.
+Diese Datei und die Bilder unter `docs/mockups/` sind die verbindliche visuelle Soll-Vorgabe für Kofferly.
 
-## Verbindliche Designsprache
+## Grundgefühl
+
+Kofferly soll wie eine ruhige, hochwertige Reise-App wirken – nicht wie eine technische Checklisten-Anwendung.
 
 - Forest Green als Primärfarbe
-- warme Creme-/Off-White-Flächen
-- große, weiche Kartenradien
-- ruhige Schatten, keine harte Dashboard-Optik
-- Reisezielbild prominent als emotionaler Einstieg
-- Countdown und Reisedatum direkt am Hero-Bereich
-- klare, freundliche Packfortschritte
-- Erinnerungen dezent und hilfreich statt alarmistisch
-- Rot nur für echte Fehler bzw. destruktive Aktionen
-- Mobile-first / PWA-geeignet
+- warmes Creme / Off-White als Hintergrund
+- Sage- und Peach-Akzente
+- großzügige Rundungen
+- weiche, zurückhaltende Schatten
+- klare Hierarchie und viel Luft
+- keine aggressive Alarm-Optik für normale Erinnerungen
 
-## Reisezielbild
+## Dashboard
 
-Das Zielbild ist funktionaler Bestandteil des Dashboards, nicht bloß Dekoration. Es soll sich am konkreten Reiseziel orientieren. Wird ein Bild online geladen, wird es komprimiert und als Blob in IndexedDB gespeichert, damit es anschließend offline verfügbar ist.
+1. Im Header steht links ausschließlich **Kofferly** als Schriftzug. Dort wird kein App-Logo gezeigt.
+2. Das große Reisezielbild ist das emotionale Hero-Element.
+3. Direkt danach folgt – wenn die Abreise näher rückt und noch Dinge offen sind – die Karte **„Noch etwas zu erledigen“**.
+4. Die Karte nutzt ein Flugzeugmotiv und den Text **„Die Reise startet in …“**.
+5. Ein Tipp auf diese Karte öffnet eine ruhige Detailansicht der noch unvollständigen Kategorien.
+6. Packfortschritt, Wetter und weitere Reiseinformationen folgen erst darunter.
 
-## Packempfehlung
+## Benachrichtigungen
 
-Die Packliste soll nicht nur Stichwörter enthalten. Sie zeigt Mengen und kurze Begründungen, berechnet aus Reisedauer sowie – soweit vorhanden – Zieltyp und Wetter.
+- Im Header sitzt rechts ein dezentes Glockensymbol.
+- Ungelesene Hinweise werden mit einem kleinen Zähler markiert.
+- Der Benachrichtigungsbereich besitzt die Filter **Alle**, **Wichtig** und **Tipps**.
+- Benachrichtigungen bleiben lokal und gehören zur Offline-first-Strategie.
+- Countdown-, Pack-, Letzter-Check-, Wetter- und Reisetipp-Hinweise sollen ruhig formuliert sein.
+- Benachrichtigungsarten können in den Einstellungen einzeln deaktiviert werden.
 
-## Referenz-Mockup
+## Erinnerungslogik
+
+- mehr als 7 Tage: kein prominenter Aufgabenhinweis auf dem Dashboard
+- 7–3 Tage: sanfter Hinweis auf größere offene Bereiche
+- 2 Tage bis Abreise: wichtige offene Punkte deutlich sichtbarer
+- 24 Stunden / letzter Tag: „Letzter Check“
+- alles erledigt: keine unnötige Warnkarte
+
+## App-Icon
+
+Das sichtbare App-Icon darf nicht als UI-Logo im Header missverstanden werden. Für Android werden normale und maskierbare Icons getrennt behandelt.
+
+Das maskierbare Icon muss:
+
+- einen vollflächigen Forest-Green-Hintergrund besitzen
+- das eigentliche Koffer-Motiv deutlich innerhalb der Safe-Zone halten
+- auch bei runder oder Squircle-Maske vollständig erkennbar bleiben
+
+Dies ist insbesondere für Launcher mit aggressivem Zuschnitt wie auf manchen Xiaomi-/HyperOS-Geräten relevant.
+
+## Mockup
+
+Aktuelle Referenz:
 
 - `mockups/kofferly-design-reference-v1.png`
 
-Bei späteren Layout-Änderungen soll zuerst geprüft werden, ob die Änderung mit dieser Designsprache konsistent bleibt.
+Bei späteren Layout-Änderungen muss zuerst geprüft werden, ob die Änderung mit dieser Designsprache konsistent bleibt.
