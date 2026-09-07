@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.11 – 2026-09-07
+
+### Einstellungen
+- Neue Anzeige `Installierte Version` ergänzt, damit der aktuell auf dem Gerät laufende Kofferly-Stand direkt sichtbar ist.
+- Die Versionsnummer wird automatisch aus der `VERSION`-Datei gelesen und muss nicht separat in der UI gepflegt werden.
+- `VERSION` wird nun auch im PWA-Shell-Cache vorgehalten, damit die Anzeige offline verfügbar bleibt.
+
+### PWA
+- Service-Worker-Cache auf `kofferly-shell-v15` angehoben.
+
 ## 0.3.10 – 2026-09-07
 
 ### Aktualisieren
