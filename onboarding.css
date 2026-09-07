@@ -3,6 +3,7 @@
 .onboarding-shell{position:fixed;inset:0;z-index:120;background:var(--cream);color:var(--ink);overflow:hidden;touch-action:pan-y}
 body.onboarding-open{overflow:hidden}
 body.onboarding-open #app{visibility:hidden}
+body.onboarding-open dialog[open]{visibility:hidden}
 .onboarding-frame{width:min(100%,720px);height:100%;margin:0 auto;display:grid;grid-template-rows:auto minmax(0,1fr) auto;padding:calc(18px + env(safe-area-inset-top,0px)) 22px calc(18px + env(safe-area-inset-bottom,0px))}
 .onboarding-top{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:48px}
 .onboarding-brand{font-size:1.32rem;font-weight:900;letter-spacing:-.035em;color:var(--forest)}
