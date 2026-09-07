@@ -1,165 +1,105 @@
 <!doctype html>
 <html lang="de">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#0F5132">
-  <meta name="color-scheme" content="light">
-  <meta name="description" content="Kofferly – offlinefähige Reise- und Packlisten-App mit gespeicherter Wettervorhersage.">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#214f3f" />
+  <meta name="description" content="Kofferly – offline-first Reiseplanung und Packliste." />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="./icons/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+  <link rel="stylesheet" href="./styles.css" />
   <title>Kofferly</title>
-  <link rel="manifest" href="./manifest.webmanifest">
-  <link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon.png">
-  <link rel="stylesheet" href="./app.css">
 </head>
 <body>
-  <div class="app-shell">
+  <div id="app" class="app-shell">
     <header class="topbar">
-      <button class="brand" type="button" data-nav="overview" aria-label="Zur Übersicht">
-        <span class="brand-logo" aria-hidden="true"><img src="./icons/icon-192.png" alt=""></span>
-        <span class="brand-copy"><strong>Kofferly</strong><small>Packen. Los. Entdecken.</small></span>
+      <button class="brand" data-route="home" aria-label="Kofferly Startseite">
+        <img src="./icons/icon.svg" alt="" class="brand-icon" />
+        <span>Kofferly</span>
       </button>
-      <button id="settingsQuickBtn" class="icon-btn" type="button" aria-label="Einstellungen öffnen" title="Einstellungen">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5A3.5 3.5 0 1 0 12 8a3.5 3.5 0 0 0 0 7.5Zm7.4-3.5a7.3 7.3 0 0 0-.1-1l2-1.6-2-3.4-2.5 1a8.4 8.4 0 0 0-1.7-1L14.7 3h-4l-.4 2.8a8.4 8.4 0 0 0-1.8 1L6 5.8 4 9.3 6.1 11a7.3 7.3 0 0 0 0 2L4 14.7 6 18l2.5-1a8.4 8.4 0 0 0 1.8 1l.4 2.8h4l.4-2.8a8.4 8.4 0 0 0 1.7-1l2.6 1 2-3.4-2.1-1.6c.1-.3.1-.7.1-1Z"/></svg>
-      </button>
+      <div class="topbar-actions">
+        <span id="networkBadge" class="network-badge">Offline bereit</span>
+        <button class="icon-button" id="openTripDialog" aria-label="Neue Reise">＋</button>
+      </div>
     </header>
 
-    <main id="appMain" class="content" tabindex="-1">
-      <section id="view-overview" class="view active" data-view="overview" aria-labelledby="overviewTitle">
-        <div class="hero-card">
-          <div class="hero-gradient"></div>
-          <div class="hero-content">
-            <p class="eyebrow">Deine Reise</p>
-            <h1 id="overviewTitle"><span id="tripTitle">Südtirol</span></h1>
-            <p class="trip-meta"><span>📅</span> <span id="tripDates">09.09. – 16.09.2026</span></p>
-            <p class="trip-meta"><span>📍</span> <span id="tripLocation">Dorf Tirol, Italien</span></p>
-          </div>
-        </div>
-
-        <section class="card progress-card" aria-labelledby="progressTitle">
-          <div class="section-head">
-            <div><p class="section-kicker">Packfortschritt</p><h2 id="progressTitle"><span id="overviewDone">0</span> von <span id="overviewTotal">0</span> erledigt</h2></div>
-            <strong id="overviewPercent" class="big-percent">0 %</strong>
-          </div>
-          <div class="progress-track" aria-hidden="true"><div id="overviewProgress" class="progress-fill"></div></div>
-          <p id="progressHint" class="muted tiny-gap">Noch ein paar Dinge, dann kann es losgehen.</p>
-        </section>
-
-        <section class="card weather-card" aria-labelledby="weatherPreviewTitle">
-          <div class="section-head weather-heading">
-            <div><p class="section-kicker">Wettervorschau</p><h2 id="weatherPreviewTitle">Am Reiseziel</h2></div>
-            <span id="weatherFreshness" class="status-pill neutral">Noch nicht geladen</span>
-          </div>
-          <div id="weatherPreview" class="weather-preview" aria-live="polite">
-            <div class="empty-state compact"><span class="empty-icon">☁️</span><p>Einmal online aktualisieren – danach bleibt die Vorhersage offline sichtbar.</p></div>
-          </div>
-          <div class="button-row">
-            <button id="weatherDetailsBtn" class="btn secondary" type="button">Details anzeigen</button>
-            <button id="refreshWeatherBtn" class="btn primary" type="button"><span class="refresh-symbol">↻</span> Aktualisieren</button>
-          </div>
-        </section>
-
-        <section class="quick-grid" aria-label="Schnellzugriff">
-          <button type="button" class="quick-card" data-nav="packing"><span>☑️</span><strong>Packliste</strong><small>Offene Dinge abhaken</small></button>
-          <button type="button" class="quick-card" data-nav="done"><span>✅</span><strong>Erledigt</strong><small>Alles Gepackte sehen</small></button>
-          <button type="button" class="quick-card" data-action="weather"><span>🌦️</span><strong>Wetter</strong><small>Offline-Vorschau öffnen</small></button>
-          <button type="button" class="quick-card" data-nav="more"><span>⚙️</span><strong>Reiseinfos</strong><small>Ort und Datum ändern</small></button>
-        </section>
-      </section>
-
-      <section id="view-packing" class="view" data-view="packing" aria-labelledby="packingTitle">
-        <div class="page-head">
-          <div><p class="section-kicker">Packliste</p><h1 id="packingTitle">Was noch mit muss</h1></div>
-          <div class="mini-progress"><span id="packingCount">0/0</span></div>
-        </div>
-        <div id="categoryTabs" class="chip-scroll" role="tablist" aria-label="Packlisten-Kategorien"></div>
-        <section class="card category-card">
-          <div class="category-header">
-            <div><p id="categoryIcon" class="category-icon">👕</p><div><h2 id="categoryTitle">Kleidung</h2><p id="categoryProgressText" class="muted">0 von 0 erledigt</p></div></div>
-            <span id="categoryPercent" class="category-percent">0%</span>
-          </div>
-          <div class="progress-track slim"><div id="categoryProgress" class="progress-fill"></div></div>
-          <div id="packingItems" class="item-list"></div>
-        </section>
-        <button id="addItemFab" class="fab" type="button" aria-label="Eintrag hinzufügen" title="Eintrag hinzufügen">+</button>
-      </section>
-
-      <section id="view-done" class="view" data-view="done" aria-labelledby="doneTitle">
-        <div class="page-head"><div><p class="section-kicker">Erledigt</p><h1 id="doneTitle">Schon eingepackt</h1></div><div class="mini-progress done"><span id="doneCountBadge">0</span></div></div>
-        <div id="doneFilterTabs" class="chip-scroll" role="tablist" aria-label="Erledigt nach Kategorie filtern"></div>
-        <section class="card done-card"><div id="doneItems" class="item-list"></div></section>
-      </section>
-
-      <section id="view-more" class="view" data-view="more" aria-labelledby="moreTitle">
-        <div class="page-head"><div><p class="section-kicker">Mehr</p><h1 id="moreTitle">Reise & App</h1></div></div>
-        <section class="card settings-card">
-          <h2>Reisedaten</h2>
-          <p class="muted">Kofferly nutzt Ort und Zeitraum für die Wettervorschau.</p>
-          <form id="tripForm" class="form-grid">
-            <label>Reisename<input id="tripNameInput" type="text" autocomplete="off" placeholder="z. B. Südtirol"></label>
-            <label>Reiseziel<input id="tripLocationInput" type="text" autocomplete="off" placeholder="z. B. Dorf Tirol, Italien" required></label>
-            <div class="date-grid"><label>Von<input id="tripStartInput" type="date" required></label><label>Bis<input id="tripEndInput" type="date" required></label></div>
-            <button class="btn primary full" type="submit">Speichern & Wetter aktualisieren</button>
-          </form>
-        </section>
-        <section class="card settings-card">
-          <div class="settings-row"><div><h2>Offline & Installation</h2><p id="installState" class="muted">Kofferly kann als PWA auf dem Homescreen installiert werden.</p></div><span class="settings-icon">📲</span></div>
-          <button id="installBtn" class="btn secondary full hidden" type="button">Kofferly installieren</button>
-          <p class="info-note">Packliste, Reisedaten und die zuletzt geladene Wettervorhersage werden lokal auf deinem Gerät gespeichert.</p>
-        </section>
-        <section class="card settings-card danger-zone">
-          <h2>Packliste zurücksetzen</h2>
-          <p class="muted">Entfernt alle Haken und deine eigenen zusätzlichen Einträge. Die Standardliste bleibt erhalten.</p>
-          <button id="resetBtn" class="btn danger full" type="button">Packliste zurücksetzen</button>
-        </section>
-        <p class="credits">Wetterdaten: Open-Meteo · Keine Anmeldung · Keine Werbung · Keine Analyse-Tracker</p>
-      </section>
-
-      <section id="view-weather" class="view" data-view="weather" aria-labelledby="weatherTitle">
-        <div class="weather-detail-head">
-          <button id="weatherBackBtn" class="icon-btn back-btn" type="button" aria-label="Zurück">←</button>
-          <div><p class="section-kicker">Wetter</p><h1 id="weatherTitle">Wettervorschau</h1></div>
-          <button id="weatherRefreshTopBtn" class="icon-btn" type="button" aria-label="Wetter aktualisieren">↻</button>
-        </div>
-        <section class="weather-location-card">
-          <div><p class="eyebrow light">Reiseziel</p><h2 id="weatherLocationTitle">Dorf Tirol</h2><p id="weatherDateRange" class="weather-location-meta">09.09. – 16.09.2026</p><p id="weatherUpdatedDetail" class="weather-location-meta">Noch nicht aktualisiert</p></div>
-          <span class="weather-hero-icon">🏔️</span>
-        </section>
-        <section class="card weather-list-card">
-          <div class="section-head"><div><p class="section-kicker">Tagesübersicht</p><h2>Vorhersage</h2></div><span id="weatherOfflineBadge" class="status-pill neutral">Offline gespeichert</span></div>
-          <div id="weatherList" class="forecast-list"></div>
-        </section>
-        <p id="weatherInfoNote" class="info-note wide">Die Wetterdaten werden nach einer Aktualisierung lokal gespeichert und sind anschließend auch ohne Internet sichtbar.</p>
-      </section>
-    </main>
+    <main id="view" class="view" aria-live="polite"></main>
 
     <nav class="bottom-nav" aria-label="Hauptnavigation">
-      <button class="nav-btn active" type="button" data-nav="overview"><span>⌂</span><small>Übersicht</small></button>
-      <button class="nav-btn" type="button" data-nav="packing"><span>☑</span><small>Packliste</small></button>
-      <button class="nav-btn" type="button" data-nav="done"><span>✓</span><small>Erledigt</small></button>
-      <button class="nav-btn" type="button" data-nav="more"><span>•••</span><small>Mehr</small></button>
+      <button data-route="home" class="nav-item active">
+        <span class="nav-icon">⌂</span><span>Übersicht</span>
+      </button>
+      <button data-route="packing" class="nav-item">
+        <span class="nav-icon">✓</span><span>Packliste</span>
+      </button>
+      <button data-route="trips" class="nav-item">
+        <span class="nav-icon">⌘</span><span>Reisen</span>
+      </button>
+      <button data-route="settings" class="nav-item">
+        <span class="nav-icon">⚙</span><span>Einstellungen</span>
+      </button>
     </nav>
   </div>
 
-  <dialog id="addItemDialog" class="modal">
-    <form id="addItemForm" method="dialog" class="modal-card">
-      <div class="modal-head"><div><p class="section-kicker">Packliste</p><h2>Eintrag hinzufügen</h2></div><button id="closeAddItem" class="icon-btn" type="button" aria-label="Schließen">×</button></div>
-      <label>Bezeichnung<input id="newItemText" type="text" required maxlength="80" placeholder="z. B. Fernglas"></label>
-      <label>Kategorie<select id="newItemCategory"></select></label>
-      <label class="check-label"><input id="newItemImportant" type="checkbox"><span>Als wichtig markieren</span></label>
-      <div class="button-row end"><button class="btn secondary" value="cancel" type="button" id="cancelAddItem">Abbrechen</button><button class="btn primary" value="default" type="submit">Hinzufügen</button></div>
+  <dialog id="tripDialog" class="modal">
+    <form method="dialog" id="tripForm" class="modal-card">
+      <div class="modal-head">
+        <div>
+          <p class="eyebrow">Neue Reise</p>
+          <h2>Wohin geht's?</h2>
+        </div>
+        <button value="cancel" class="icon-button" aria-label="Schließen">×</button>
+      </div>
+
+      <label>
+        Reiseziel
+        <input id="tripDestination" name="destination" required placeholder="z. B. Südtirol" autocomplete="off" />
+      </label>
+
+      <label>
+        Abreise
+        <input id="tripDate" name="date" type="date" required />
+      </label>
+
+      <label>
+        Rückreise
+        <input id="tripEndDate" name="endDate" type="date" />
+      </label>
+
+      <label>
+        Notiz
+        <textarea id="tripNote" name="note" rows="3" placeholder="Unterkunft, Treffpunkt, Besonderheiten …"></textarea>
+      </label>
+
+      <div class="modal-actions">
+        <button value="cancel" class="button ghost">Abbrechen</button>
+        <button id="saveTripButton" value="default" class="button primary">Reise anlegen</button>
+      </div>
     </form>
   </dialog>
 
-  <dialog id="resetDialog" class="modal">
-    <div class="modal-card">
-      <div class="modal-head"><div><p class="section-kicker">Zurücksetzen</p><h2>Wirklich zurücksetzen?</h2></div></div>
-      <p>Alle Haken und selbst hinzugefügten Einträge werden entfernt. Die Standard-Packliste bleibt bestehen.</p>
-      <div class="button-row end"><button id="cancelReset" class="btn secondary" type="button">Abbrechen</button><button id="confirmReset" class="btn danger" type="button">Zurücksetzen</button></div>
-    </div>
+  <dialog id="confirmDialog" class="modal">
+    <form method="dialog" class="modal-card compact">
+      <h2 id="confirmTitle">Wirklich löschen?</h2>
+      <p id="confirmText" class="muted"></p>
+      <div class="modal-actions">
+        <button value="cancel" class="button ghost">Abbrechen</button>
+        <button value="confirm" class="button danger">Löschen</button>
+      </div>
+    </form>
   </dialog>
 
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script src="./app.js" defer></script>
+  <template id="emptyTemplate">
+    <section class="empty-state card">
+      <div class="empty-illustration">🧳</div>
+      <p class="eyebrow">Kofferly</p>
+      <h1>Die nächste Reise kann kommen.</h1>
+      <p>Lege eine Reise an. Kofferly speichert Packliste, Reisezielbild und Wetterdaten lokal auf diesem Gerät.</p>
+      <button class="button primary" data-action="new-trip">Erste Reise anlegen</button>
+    </section>
+  </template>
+
+  <script type="module" src="./js/app.js"></script>
 </body>
 </html>
