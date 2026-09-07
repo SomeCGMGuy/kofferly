@@ -63,6 +63,7 @@ let scheduled = false;
 let profileCardMounting = false;
 let activityCatalog = [];
 let editorMode = "new";
+const tripSelectedActivityIds = new Set();
 
 function clone(value) {
   return JSON.parse(JSON.stringify(value));
@@ -157,11 +158,10 @@ function profileMatches(profile, query) {
 function renderTripActivityChoices(query = "") {
   const holder = document.querySelector("#activityProfileChoices");
   if (!holder) return;
-  const selected = new Set([...holder.querySelectorAll("input:checked")].map(input => input.value));
   const matches = activityCatalog.filter(profile => profileMatches(profile, query));
   holder.innerHTML = matches.length ? matches.map(profile => `
     <label class="activity-choice">
-      <input type="checkbox" value="${escapeHtml(profile.id)}" ${selected.has(profile.id) ? "checked" : ""}>
+      <input type="checkbox" value="${escapeHtml(profile.id)}" ${tripSelectedActivityIds.has(profile.id) ? "checked" : ""}>
       <span>
         <strong>${escapeHtml(profile.name)}</strong>
         <small>${escapeHtml(profile.description || `${profile.items.length} Packeinträge`)}</small>
@@ -171,8 +171,7 @@ function renderTripActivityChoices(query = "") {
 }
 
 function selectedActivities() {
-  const ids = new Set([...document.querySelectorAll("#activityProfileChoices input:checked")].map(input => input.value));
-  return activityCatalog.filter(profile => ids.has(profile.id));
+  return activityCatalog.filter(profile => tripSelectedActivityIds.has(profile.id));
 }
 
 async function injectTravelerSetting() {
@@ -378,6 +377,11 @@ document.addEventListener("input", event => {
 });
 
 document.addEventListener("change", async event => {
+  if (event.target.matches("#activityProfileChoices input[type='checkbox']")) {
+    if (event.target.checked) tripSelectedActivityIds.add(event.target.value);
+    else tripSelectedActivityIds.delete(event.target.value);
+  }
+
   const select = event.target.closest("[data-pack-profile]");
   if (!select) return;
   await setSetting(PROFILE_KEY, select.value);
@@ -387,6 +391,7 @@ document.addEventListener("change", async event => {
 
 document.addEventListener("click", async event => {
   if (event.target.closest("#openTripDialog,[data-action='new-trip']")) {
+    tripSelectedActivityIds.clear();
     const tripProfile = document.querySelector("#tripPackProfile");
     if (tripProfile) tripProfile.value = await getSetting(PROFILE_KEY, "neutral");
     const search = document.querySelector("#activityProfileSearch");
@@ -416,6 +421,7 @@ document.addEventListener("click", async event => {
   const remove = event.target.closest("[data-profile-delete]");
   if (remove) {
     activityCatalog = activityCatalog.filter(profile => profile.id !== remove.dataset.profileDelete);
+    tripSelectedActivityIds.delete(remove.dataset.profileDelete);
     await saveActivityCatalog();
     rerenderManagers();
   }
