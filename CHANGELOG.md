@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.3.7 – 2026-09-07
+
+### Packliste
+- Zusammenfassungsblock `Berechnet für deine Reise` aus der Packlistenansicht entfernt.
+- Suche sitzt nun direkt unter dem Seitenkopf, damit die Aufgaben ohne zusätzlichen Infoblock sofort erreichbar sind.
+- Mengen-, Wetter- und Empfehlungslogik bleiben unverändert aktiv.
+
+### Einstellungen
+- Erklärkarte `Intelligente Packliste` entfernt, ohne die automatische Packberechnung zu deaktivieren.
+
+### PWA
+- Service-Worker-Cache auf `kofferly-shell-v11` angehoben.
+
 ## 0.3.6 – 2026-09-07
 
 ### Bedienung
