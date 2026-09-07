@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.5.0 – 2026-09-07
+
+### Profile
+- `Packprofil` in `Reisende` umbenannt; `Dame`, `Herr`, `Paar` und `Keine Angabe` bleiben getrennt von Interessen und Aktivitäten.
+- Neue kombinierbare Aktivitätsprofile ergänzt: `Sport & Fitness`, `Foto & Video`, `Wandern` und `Strand & Baden`.
+- `Foto & Video` ergänzt unter anderem Action-Cam, Selfiestick / Mini-Stativ, Speicherkarte und Ersatzakku / Ladezubehör.
+- Aktivitätsprofile können beim Anlegen einer Reise über eine Live-Suche gefunden und mehrfach ausgewählt werden.
+- Bereits ausgewählte Profile bleiben beim Suchen erhalten, auch wenn sie zeitweise ausgefiltert sind.
+- Gewählte Aktivitätsprofile werden als Snapshot in der Reise gespeichert; spätere Profiländerungen verändern bestehende Reisen nicht rückwirkend.
+
+### Profilverwaltung
+- Neue durchsuchbare Profilverwaltung unter Einstellungen.
+- Standardprofile lassen sich bearbeiten, kopieren und auf den Auslieferungszustand zurücksetzen.
+- Eigene Profile lassen sich anlegen, bearbeiten, kopieren und löschen.
+- Jeder Profileintrag unterstützt Kategorie, Gegenstand, Menge, Einheit und `wichtig`-Markierung.
+- Suche berücksichtigt Profilname, Beschreibung, Kategorien und Packeinträge.
+
+### Wetter & PWA
+- Interne Profilmetadaten werden von der Wetterortsuche ignoriert.
+- Service-Worker-Cache auf `kofferly-shell-v23` angehoben.
+
 ## 0.4.2 – 2026-09-07
 
 ### Packprofile
