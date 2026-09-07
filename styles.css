@@ -152,3 +152,15 @@ label{display:grid;gap:7px;font-weight:800;font-size:.86rem}
   .inline-form{grid-template-columns:1fr auto}
   .inline-form label{grid-column:1/-1}
 }
+.label-hint{font-weight:600;color:var(--muted);font-size:.75rem;margin-left:4px}
+.field-help{font-weight:500;color:var(--muted);font-size:.75rem;line-height:1.35}
+.quantity-badge{display:inline-flex;align-items:center;padding:5px 9px;border-radius:999px;background:var(--forest-3);color:var(--forest);font-size:.72rem;font-weight:900;white-space:nowrap}
+.item-copy{display:grid;gap:3px;min-width:0}
+.item-reason{font-size:.72rem;color:var(--muted);line-height:1.3}
+.pack-summary{padding:18px;margin-bottom:14px;background:linear-gradient(135deg,#eef5f0,#fffdf8)}
+.pack-summary-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px}
+.pack-summary-chip{padding:10px;border-radius:14px;background:white;border:1px solid var(--line)}
+.pack-summary-chip strong{display:block;color:var(--forest);font-size:1.05rem}
+.weather-error{margin-top:12px;padding:12px;border-radius:13px;background:#fff4e8;color:#724d30;font-size:.82rem}
+.weather-location-form{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:12px}
+@media (max-width:760px){.pack-summary-grid{grid-template-columns:repeat(2,1fr)}.weather-location-form{grid-template-columns:1fr}}

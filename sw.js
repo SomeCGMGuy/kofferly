@@ -1,4 +1,4 @@
-const CACHE = "kofferly-shell-v1";
+const CACHE = "kofferly-shell-v2";
 const ASSETS = [
   "./",
   "./index.html",
@@ -10,6 +10,7 @@ const ASSETS = [
   "./js/app.js",
   "./js/db.js",
   "./js/defaults.js",
+  "./js/packing.js",
   "./js/images.js",
   "./js/weather.js",
   "./js/reminders.js"

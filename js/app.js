@@ -5,12 +5,17 @@ import { DEFAULT_PACKING } from "./defaults.js";
 import { refreshDestinationImage, getDestinationImage, imageObjectUrl } from "./images.js";
 import { refreshWeather, getWeather, weatherIcon } from "./weather.js";
 import { buildReminder, daysUntil } from "./reminders.js";
+import {
+  generatePackingRecommendations, recommendationHeadline, tripLength
+} from "./packing.js";
 
 const view = document.querySelector("#view");
 const tripDialog = document.querySelector("#tripDialog");
 const tripForm = document.querySelector("#tripForm");
 const confirmDialog = document.querySelector("#confirmDialog");
 const networkBadge = document.querySelector("#networkBadge");
+
+const LEGACY_DEFAULT_NAMES = new Set(DEFAULT_PACKING.map(item => item.name));
 
 let state = {
   route: "home",
@@ -20,6 +25,7 @@ let state = {
   image: null,
   imageUrl: null,
   weather: null,
+  weatherError: "",
   settings: {
     autoImage: true,
     autoWeather: true
@@ -52,7 +58,7 @@ function toast(message) {
   el.className = "toast";
   el.textContent = message;
   document.body.append(el);
-  setTimeout(() => el.remove(), 2600);
+  setTimeout(() => el.remove(), 3000);
 }
 
 function updateNetworkBadge() {
@@ -86,6 +92,7 @@ async function loadState() {
 async function selectTrip(id, rerender = true) {
   if (state.imageUrl) URL.revokeObjectURL(state.imageUrl);
   state.imageUrl = null;
+  state.weatherError = "";
 
   state.currentTrip = state.trips.find(t => t.id === id) || null;
   if (state.currentTrip) {
@@ -94,6 +101,7 @@ async function selectTrip(id, rerender = true) {
     state.image = await getDestinationImage(state.currentTrip.id);
     state.imageUrl = imageObjectUrl(state.image);
     state.weather = await getWeather(state.currentTrip.id);
+    await syncGeneratedPacking(false);
   } else {
     state.items = [];
     state.image = null;
@@ -102,10 +110,51 @@ async function selectTrip(id, rerender = true) {
   if (rerender) render();
 }
 
+function isLegacyGenerated(item) {
+  return !item.source && !item.key && LEGACY_DEFAULT_NAMES.has(item.name);
+}
+
+async function syncGeneratedPacking(showToast = true) {
+  if (!state.currentTrip) return;
+
+  const generated = generatePackingRecommendations(state.currentTrip, state.weather);
+  const generatedKeys = new Set(generated.map(item => item.key));
+  const managedExisting = state.items.filter(item => item.source === "generated" || isLegacyGenerated(item));
+  const custom = state.items.filter(item => item.source !== "generated" && !isLegacyGenerated(item));
+
+  const byKey = new Map(managedExisting.filter(i => i.key).map(i => [i.key, i]));
+  const byName = new Map(managedExisting.map(i => [i.name, i]));
+  const nextManaged = [];
+
+  for (const recommendation of generated) {
+    const existing = byKey.get(recommendation.key) || byName.get(recommendation.name);
+    const row = {
+      ...(existing || {}),
+      ...recommendation,
+      id: existing?.id || uid(),
+      tripId: state.currentTrip.id,
+      checked: existing?.checked ?? false,
+      createdAt: existing?.createdAt || new Date().toISOString()
+    };
+    await put("packItems", row);
+    nextManaged.push(row);
+  }
+
+  for (const old of managedExisting) {
+    const keyStillUsed = old.key && generatedKeys.has(old.key);
+    const nameStillUsed = generated.some(item => item.name === old.name);
+    if (!keyStillUsed && !nameStillUsed) await del("packItems", old.id);
+  }
+
+  state.items = [...nextManaged, ...custom];
+  if (showToast) toast("Packempfehlung aktualisiert");
+}
+
 async function createTrip(formData) {
   const trip = {
     id: uid(),
     destination: formData.get("destination").trim(),
+    weatherLocation: formData.get("weatherLocation")?.trim() || "",
     date: formData.get("date"),
     endDate: formData.get("endDate") || "",
     note: formData.get("note")?.trim() || "",
@@ -113,7 +162,7 @@ async function createTrip(formData) {
   };
 
   await put("trips", trip);
-  for (const item of DEFAULT_PACKING) {
+  for (const item of generatePackingRecommendations(trip, null)) {
     await put("packItems", {
       id: uid(),
       tripId: trip.id,
@@ -132,7 +181,7 @@ async function createTrip(formData) {
   state.route = "home";
   document.querySelectorAll(".nav-item").forEach(btn => btn.classList.toggle("active", btn.dataset.route === "home"));
   render();
-  toast("Reise angelegt");
+  toast("Reise angelegt · Packliste berechnet");
 
   if (navigator.onLine) {
     if (state.settings.autoImage) refreshImage(false);
@@ -168,19 +217,31 @@ async function refreshImage(showToast = true) {
 
 async function refreshWeatherData(showToast = true) {
   if (!state.currentTrip || !navigator.onLine) {
+    state.weatherError = !navigator.onLine ? "Du bist offline. Der zuletzt gespeicherte Wetterstand bleibt verfügbar." : "";
     if (showToast) toast("Wetter kann nur online aktualisiert werden.");
+    render();
     return;
   }
+
   const targetTripId = state.currentTrip.id;
+  state.weatherError = "";
+  const button = document.querySelector("[data-action='refresh-weather']");
+  button?.setAttribute("disabled", "");
+
   try {
     const row = await refreshWeather(state.currentTrip);
     if (state.currentTrip?.id !== targetTripId) return;
     state.weather = row;
+    await syncGeneratedPacking(false);
     render();
-    if (showToast) toast("Wetter offline gespeichert");
+    if (showToast) toast("Wetter aktualisiert · Packliste angepasst");
   } catch (err) {
     console.error(err);
-    if (showToast) toast("Wetter konnte nicht aktualisiert werden.");
+    state.weatherError = err?.message || "Wetter konnte nicht aktualisiert werden.";
+    render();
+    if (showToast) toast("Wetterort prüfen – Details stehen in der Wetterkarte.");
+  } finally {
+    button?.removeAttribute("disabled");
   }
 }
 
@@ -192,13 +253,32 @@ function packingStats() {
 
 function weatherForTrip() {
   if (!state.weather || !state.currentTrip) return [];
-  const dep = new Date(`${state.currentTrip.date}T12:00:00`);
-  const end = state.currentTrip.endDate ? new Date(`${state.currentTrip.endDate}T12:00:00`) : new Date(dep.getTime() + 3*86400000);
-  const startKey = dep.toISOString().slice(0,10);
-  const endKey = end.toISOString().slice(0,10);
-  let days = state.weather.days.filter(d => d.date >= startKey && d.date <= endKey).slice(0,4);
-  if (!days.length) days = state.weather.days.slice(0,4);
-  return days;
+  const dep = state.currentTrip.date;
+  const end = state.currentTrip.endDate || state.currentTrip.date;
+  return state.weather.days.filter(d => d.date >= dep && d.date <= end).slice(0,4);
+}
+
+function forecastAvailabilityText() {
+  if (!state.weather?.days?.length || !state.currentTrip) return "";
+  const first = state.weather.days[0].date;
+  const last = state.weather.days.at(-1).date;
+  if (state.currentTrip.date > last) {
+    return `Die Reise liegt noch außerhalb der aktuellen Vorhersage. Der Wetterdienst reicht momentan bis ${formatDate(last)}.`;
+  }
+  if ((state.currentTrip.endDate || state.currentTrip.date) < first) {
+    return "Der Reisezeitraum liegt vor dem aktuell verfügbaren Vorhersagefenster.";
+  }
+  return "";
+}
+
+function recommendationItems() {
+  const wanted = ["underwear", "socks", "tops", "meds"];
+  return wanted.map(key => state.items.find(i => i.key === key)).filter(Boolean);
+}
+
+function quantityText(item) {
+  if (item?.quantity == null || item.quantity === "") return "";
+  return `${item.quantity} ${item.unit || ""}`.trim();
 }
 
 function renderHome() {
@@ -209,6 +289,8 @@ function renderHome() {
   const stats = packingStats();
   const reminder = buildReminder(trip, state.items);
   const weatherDays = weatherForTrip();
+  const forecastNote = forecastAvailabilityText();
+  const recItems = recommendationItems();
 
   const heroImage = state.imageUrl
     ? `<img src="${state.imageUrl}" alt="Reiseziel ${escapeHtml(trip.destination)}" />`
@@ -252,6 +334,23 @@ function renderHome() {
         </section>
 
         <section class="info-card card">
+          <p class="eyebrow">Deine Packempfehlung</p>
+          <h2>${escapeHtml(recommendationHeadline(trip, state.weather))}</h2>
+          <p class="muted">Mengen werden aus Reisedauer, Zieltyp und – sobald verfügbar – dem Wetter berechnet.</p>
+          <div class="pack-summary-grid">
+            ${recItems.map(item => `
+              <div class="pack-summary-chip">
+                <strong>${escapeHtml(quantityText(item))}</strong>
+                <small>${escapeHtml(item.name)}</small>
+              </div>
+            `).join("")}
+          </div>
+          <div class="quick-actions">
+            <button class="button secondary" data-route="packing">Alle Empfehlungen ansehen</button>
+          </div>
+        </section>
+
+        <section class="info-card card">
           <div class="progress-row">
             <div>
               <p class="eyebrow">Packfortschritt</p>
@@ -273,8 +372,9 @@ function renderHome() {
               <p class="eyebrow">Wetter am Ziel</p>
               <h2>${state.weather ? escapeHtml(state.weather.place) : "Noch nicht geladen"}</h2>
             </div>
-            <button class="button small secondary" data-action="refresh-weather">Aktualisieren</button>
+            <button class="button small secondary" data-action="refresh-weather" ${navigator.onLine ? "" : "disabled"}>Aktualisieren</button>
           </div>
+
           ${weatherDays.length ? `
             <div class="weather-strip">
               ${weatherDays.map(d => `
@@ -286,11 +386,16 @@ function renderHome() {
                 </div>
               `).join("")}
             </div>
-            <p class="muted" style="margin-top:10px;font-size:.75rem">
-              ${navigator.onLine ? "Online aktualisierbar" : "Offline aus dem letzten Stand"}
-              ${state.weather?.fetchedAt ? ` · Stand ${new Date(state.weather.fetchedAt).toLocaleString("de-DE",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}` : ""}
-            </p>
-          ` : `<p class="muted">Wenn du kurz online bist, speichert Kofferly die Vorhersage lokal für unterwegs.</p>`}
+          ` : `<p class="muted">${forecastNote ? escapeHtml(forecastNote) : "Wenn du kurz online bist, speichert Kofferly die Vorhersage lokal für unterwegs."}</p>`}
+
+          ${state.weather?.fetchedAt ? `<p class="muted" style="margin-top:10px;font-size:.75rem">${navigator.onLine ? "Online aktualisierbar" : "Offline aus dem letzten Stand"} · Stand ${new Date(state.weather.fetchedAt).toLocaleString("de-DE",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}</p>` : ""}
+
+          ${state.weatherError ? `<div class="weather-error">${escapeHtml(state.weatherError)}</div>` : ""}
+
+          <form id="weatherLocationForm" class="weather-location-form">
+            <input name="weatherLocation" value="${escapeHtml(trip.weatherLocation || "")}" placeholder="Wetterort präzisieren, z. B. Dorf Tirol" aria-label="Wetterort">
+            <button class="button small ghost">Wetterort speichern</button>
+          </form>
         </section>
 
         <section class="info-card card">
@@ -306,16 +411,20 @@ function renderHome() {
   `;
 }
 
+function groupItems(items) {
+  return items.reduce((map, item) => {
+    if (!map.has(item.category)) map.set(item.category, []);
+    map.get(item.category).push(item);
+    return map;
+  }, new Map());
+}
+
 function renderPacking() {
   if (!state.currentTrip) return renderEmpty();
 
-  const groups = Map.groupBy
-    ? Map.groupBy(state.items, i => i.category)
-    : state.items.reduce((map, item) => {
-        if (!map.has(item.category)) map.set(item.category, []);
-        map.get(item.category).push(item);
-        return map;
-      }, new Map());
+  const groups = groupItems(state.items);
+  const { days, nights } = tripLength(state.currentTrip);
+  const recItems = recommendationItems();
 
   view.innerHTML = `
     <div class="section-head">
@@ -323,8 +432,19 @@ function renderPacking() {
         <p class="eyebrow">${escapeHtml(state.currentTrip.destination)}</p>
         <h1>Packliste</h1>
       </div>
-      <button class="button secondary" data-action="check-open-important">Wichtige offene</button>
+      <button class="button secondary" data-action="regenerate-packing">Empfehlungen aktualisieren</button>
     </div>
+
+    <section class="pack-summary card">
+      <p class="eyebrow">Berechnet für deine Reise</p>
+      <h2 style="margin:0">${days} Tage${nights ? ` / ${nights} Nächte` : ""}</h2>
+      <p class="muted">Kofferly rechnet Mengen mit Reserve und ergänzt wetter- bzw. zielabhängige Dinge automatisch.</p>
+      <div class="pack-summary-grid">
+        ${recItems.map(item => `
+          <div class="pack-summary-chip"><strong>${escapeHtml(quantityText(item))}</strong><small>${escapeHtml(item.name)}</small></div>
+        `).join("")}
+      </div>
+    </section>
 
     <div class="list">
       ${[...groups.entries()].map(([category, items]) => {
@@ -344,8 +464,12 @@ function renderPacking() {
               ${items.map(item => `
                 <div class="pack-item ${item.checked ? "checked" : ""}">
                   <input type="checkbox" ${item.checked ? "checked" : ""} data-action="toggle-item" data-id="${item.id}" aria-label="${escapeHtml(item.name)}">
-                  <span class="item-name">${escapeHtml(item.name)}</span>
-                  <span>
+                  <span class="item-copy">
+                    <span class="item-name">${escapeHtml(item.name)}</span>
+                    ${item.reason ? `<span class="item-reason">${escapeHtml(item.reason)}</span>` : ""}
+                  </span>
+                  <span style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end">
+                    ${quantityText(item) ? `<span class="quantity-badge">${escapeHtml(quantityText(item))}</span>` : ""}
                     ${item.important ? `<span class="important-badge">wichtig</span>` : ""}
                     <button class="item-delete" data-action="delete-item" data-id="${item.id}" aria-label="Eintrag löschen">×</button>
                   </span>
@@ -438,12 +562,18 @@ function renderSettings() {
       <section class="setting-row card">
         <div>
           <h3>Wetter automatisch aktualisieren</h3>
-          <p class="muted">Die Vorhersage wird online geladen und anschließend lokal gespeichert.</p>
+          <p class="muted">Die Vorhersage wird online geladen, lokal gespeichert und fließt in die Packempfehlung ein.</p>
         </div>
         <label class="switch">
           <input type="checkbox" data-setting="autoWeather" ${state.settings.autoWeather ? "checked" : ""}>
           <span></span>
         </label>
+      </section>
+
+      <section class="info-card card">
+        <p class="eyebrow">Intelligente Packliste</p>
+        <h2>Mengen statt bloßer Stichwörter</h2>
+        <p class="muted">Kofferly berechnet Kleidung und Reserven aus der Reisedauer. Wetter und typische Eigenschaften des Reiseziels ergänzen z. B. Regenjacke, Fleece, Badebekleidung oder Insektenschutz.</p>
       </section>
 
       <section class="info-card card">
@@ -454,9 +584,9 @@ function renderSettings() {
       </section>
 
       <section class="info-card card">
-        <p class="eyebrow">Bildquelle</p>
-        <h2>Wikimedia Commons</h2>
-        <p class="muted">Kofferly sucht passend zum eingegebenen Reiseziel nach einem Landschaftsbild. Lizenz- und Quelleninformationen werden zusammen mit dem Bild gespeichert.</p>
+        <p class="eyebrow">Datenquellen</p>
+        <h2>Open-Meteo & Wikimedia Commons</h2>
+        <p class="muted">Open-Meteo liefert die Wettervorhersage. Wikimedia Commons liefert Reisezielbilder; Lizenz- und Quelleninformationen werden zusammen mit dem Bild gespeichert.</p>
       </section>
     </div>
   `;
@@ -509,6 +639,11 @@ document.addEventListener("click", async event => {
   if (action === "new-trip") openTripDialog();
   if (action === "refresh-image") refreshImage();
   if (action === "refresh-weather") refreshWeatherData();
+
+  if (action === "regenerate-packing") {
+    await syncGeneratedPacking(true);
+    renderPacking();
+  }
 
   if (action === "select-trip") {
     await selectTrip(target.dataset.id, false);
@@ -581,11 +716,26 @@ document.addEventListener("submit", async event => {
       category: data.get("category"),
       important: data.get("important") === "on",
       checked: false,
+      quantity: 1,
+      unit: "Stück",
+      source: "custom",
       createdAt: new Date().toISOString()
     };
     await put("packItems", item);
     state.items.push(item);
     renderPacking();
+  }
+
+  if (event.target.id === "weatherLocationForm") {
+    event.preventDefault();
+    const data = new FormData(event.target);
+    state.currentTrip.weatherLocation = data.get("weatherLocation")?.trim() || "";
+    await put("trips", state.currentTrip);
+    const idx = state.trips.findIndex(t => t.id === state.currentTrip.id);
+    if (idx >= 0) state.trips[idx] = state.currentTrip;
+    toast("Wetterort gespeichert");
+    if (navigator.onLine) await refreshWeatherData(false);
+    else renderHome();
   }
 });
 
