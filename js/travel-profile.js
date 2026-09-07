@@ -22,6 +22,13 @@ function stripProfileMarkers(value = "") {
     .trim();
 }
 
+function profileMarker(value = "") {
+  return String(value)
+    .split(/\r?\n/)
+    .find(line => line.trim().startsWith(PROFILE_MARKER_PREFIX))
+    ?.trim() || "";
+}
+
 function withProfileMarker(value, profile) {
   const clean = stripProfileMarkers(value);
   if (!profile || profile === "neutral") return clean;
@@ -56,11 +63,17 @@ async function injectProfileSetting() {
   else grid.prepend(card);
 }
 
-function enhanceRouteWeatherInput() {
+async function enhanceRouteWeatherInput() {
   if (!isHomeView()) return;
   const form = view.querySelector("#weatherLocationForm");
   const input = form?.querySelector("input[name='weatherLocation']");
   if (!input) return;
+
+  const currentTripId = await getSetting("currentTripId", null);
+  const trip = currentTripId ? await get("trips", currentTripId) : null;
+  if (!form.isConnected || !input.isConnected) return;
+
+  form.dataset.profileMarker = profileMarker(trip?.weatherLocation || input.value);
 
   const textarea = document.createElement("textarea");
   textarea.name = "weatherLocation";
@@ -94,7 +107,7 @@ async function showWeatherRoute() {
 }
 
 async function enhanceCurrentView() {
-  enhanceRouteWeatherInput();
+  await enhanceRouteWeatherInput();
   await injectProfileSetting();
   await showWeatherRoute();
 }
@@ -124,23 +137,20 @@ document.addEventListener("click", async event => {
   if (tripProfile) tripProfile.value = await getSetting(PROFILE_KEY, "neutral");
 }, true);
 
-document.addEventListener("submit", async event => {
+document.addEventListener("submit", event => {
   if (event.target.id === "tripForm") {
-    const profile = event.target.elements.packProfile?.value || await getSetting(PROFILE_KEY, "neutral");
+    const profile = event.target.elements.packProfile?.value || "neutral";
     const weatherField = event.target.elements.weatherLocation;
     if (weatherField) weatherField.value = withProfileMarker(weatherField.value, profile);
     return;
   }
 
   if (event.target.id === "weatherLocationForm") {
-    const currentTripId = await getSetting("currentTripId", null);
-    const trip = currentTripId ? await get("trips", currentTripId) : null;
-    const marker = String(trip?.weatherLocation || "")
-      .split(/\r?\n/)
-      .find(line => line.trim().startsWith(PROFILE_MARKER_PREFIX));
-    if (marker && event.target.elements.weatherLocation) {
-      const clean = stripProfileMarkers(event.target.elements.weatherLocation.value);
-      event.target.elements.weatherLocation.value = [clean, marker.trim()].filter(Boolean).join("\n");
+    const marker = event.target.dataset.profileMarker || "";
+    const weatherField = event.target.elements.weatherLocation;
+    if (marker && weatherField) {
+      const clean = stripProfileMarkers(weatherField.value);
+      weatherField.value = [clean, marker].filter(Boolean).join("\n");
     }
   }
 }, true);
