@@ -49,10 +49,12 @@ body.push-dialog-leaving .app-shell{transform:translateX(0);opacity:1;filter:non
 .notification-dialog.push-dialog{width:100%}
 .notification-dialog.push-dialog .notification-sheet{width:min(100%,980px)}
 
-.pack-item{grid-template-columns:auto minmax(0,1fr) minmax(96px,max-content)}
+.pack-item{position:relative;grid-template-columns:auto minmax(0,1fr) minmax(96px,max-content);padding-right:56px}
 .pack-item .item-copy{min-width:0;overflow:hidden}
 .pack-item .item-name,.pack-item .item-reason{min-width:0;overflow-wrap:anywhere;word-break:normal}
 .pack-item>span:last-child{min-width:96px;max-width:190px;align-self:center}
+.pack-item .item-delete{position:absolute;right:18px;top:50%;transform:translateY(-50%);width:32px;height:32px;display:grid;place-items:center;border-radius:50%;font-size:1.15rem;line-height:1}
+.pack-item .item-delete:active{transform:translateY(-50%) scale(.92)}
 
 .backup-card h2{margin:0 0 8px}
 .backup-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:16px}
@@ -85,8 +87,9 @@ body.push-dialog-leaving .app-shell{transform:translateX(0);opacity:1;filter:non
 }
 
 @media (max-width:520px){
-  .pack-item{grid-template-columns:auto minmax(0,1fr);align-items:start}
+  .pack-item{grid-template-columns:auto minmax(0,1fr);align-items:start;padding-right:54px}
   .pack-item>span:last-child{grid-column:2;min-width:0;max-width:none;justify-content:flex-start!important}
+  .pack-item .item-delete{right:14px}
 }
 
 @media (prefers-reduced-motion:reduce){
