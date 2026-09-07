@@ -92,6 +92,20 @@ body.push-dialog-leaving .app-shell{transform:translateX(0);opacity:1;filter:non
 .notification-dialog.push-dialog{width:100%}
 .notification-dialog.push-dialog .notification-sheet{width:min(100%,980px)}
 
+/* Pack item layout: long labels wrap without colliding with quantity/important badges. */
+.pack-item{grid-template-columns:auto minmax(0,1fr) minmax(96px,max-content)}
+.pack-item .item-copy{min-width:0;overflow:hidden}
+.pack-item .item-name,.pack-item .item-reason{min-width:0;overflow-wrap:anywhere;word-break:normal}
+.pack-item>span:last-child{min-width:96px;max-width:190px;align-self:center}
+
+/* Backup / restore controls in Settings. */
+.backup-card h2{margin:0 0 8px}
+.backup-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:16px}
+.backup-file-input{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+.backup-status{min-height:1.2em;margin:10px 0 0;font-size:.82rem;color:var(--muted)}
+.backup-status[data-state="success"]{color:var(--forest)}
+.backup-status[data-state="error"]{color:var(--danger)}
+
 @media (max-width:760px){
   .topbar{padding-left:18px;padding-right:14px}
   .topbar-actions{gap:8px}
@@ -100,6 +114,11 @@ body.push-dialog-leaving .app-shell{transform:translateX(0);opacity:1;filter:non
   .countdown-link{grid-column:2;justify-self:start;padding:2px 0 0}
   body.has-push-dialog .app-shell{transform:translateX(-12%);opacity:.78}
   .modal.push-dialog .modal-card{width:100%}
+}
+
+@media (max-width:520px){
+  .pack-item{grid-template-columns:auto minmax(0,1fr);align-items:start}
+  .pack-item>span:last-child{grid-column:2;min-width:0;max-width:none;justify-content:flex-start!important}
 }
 
 @media (prefers-reduced-motion:reduce){
