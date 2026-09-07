@@ -1,12 +1,10 @@
-import { del, get, getAll, getByIndex, getSetting, put, setSetting } from "./db.js";
+import { get, getSetting, setSetting } from "./db.js";
 
 const view = document.querySelector("#view");
 const PROFILE_KEY = "packProfile";
-const WOMEN_PROFILE = "women";
-const PROFILE_ITEM_KEY = "women-hygiene";
+const PROFILE_MARKER_PREFIX = "@profile:";
 
 let scheduled = false;
-let profileSyncRunning = false;
 
 function isSettingsView() {
   return view?.querySelector(".section-head h1")?.textContent?.trim() === "Einstellungen";
@@ -16,42 +14,18 @@ function isHomeView() {
   return Boolean(view?.querySelector(".hero"));
 }
 
-async function syncProfileItems() {
-  if (profileSyncRunning) return;
-  profileSyncRunning = true;
+function stripProfileMarkers(value = "") {
+  return String(value)
+    .split(/\r?\n/)
+    .filter(line => !line.trim().startsWith(PROFILE_MARKER_PREFIX))
+    .join("\n")
+    .trim();
+}
 
-  try {
-    const profile = await getSetting(PROFILE_KEY, "neutral");
-    const trips = await getAll("trips");
-
-    for (const trip of trips) {
-      const items = await getByIndex("packItems", "tripId", trip.id);
-      const existing = items.find(item => item.source === "profile" && item.key === PROFILE_ITEM_KEY);
-
-      if (profile === WOMEN_PROFILE && !existing) {
-        await put("packItems", {
-          id: crypto.randomUUID(),
-          tripId: trip.id,
-          key: PROFILE_ITEM_KEY,
-          category: "Hygiene",
-          name: "Menstruations- / Hygieneartikel",
-          quantity: 1,
-          unit: "Set",
-          important: false,
-          reason: "Aus deinem optionalen Damen-Packprofil ergänzt.",
-          source: "profile",
-          checked: false,
-          createdAt: new Date().toISOString()
-        });
-      }
-
-      if (profile !== WOMEN_PROFILE && existing) {
-        await del("packItems", existing.id);
-      }
-    }
-  } finally {
-    profileSyncRunning = false;
-  }
+function withProfileMarker(value, profile) {
+  const clean = stripProfileMarkers(value);
+  if (!profile || profile === "neutral") return clean;
+  return [clean, `${PROFILE_MARKER_PREFIX}${profile}`].filter(Boolean).join("\n");
 }
 
 async function injectProfileSetting() {
@@ -67,12 +41,12 @@ async function injectProfileSetting() {
   card.dataset.packProfileCard = "";
   card.innerHTML = `
     <div>
-      <h3>Packprofil</h3>
-      <p class="muted">Optional. Beim Damen-Profil ergänzt Kofferly passende persönliche Hygieneartikel automatisch.</p>
+      <h3>Packprofil für neue Reisen</h3>
+      <p class="muted">Optional. Beim Damen-Profil ergänzt Kofferly persönliche Hygieneartikel automatisch. Das Profil wird nur für neu angelegte Reisen übernommen.</p>
     </div>
-    <select data-pack-profile aria-label="Packprofil">
+    <select data-pack-profile aria-label="Packprofil für neue Reisen">
       <option value="neutral" ${profile === "neutral" ? "selected" : ""}>Keine Angabe</option>
-      <option value="women" ${profile === WOMEN_PROFILE ? "selected" : ""}>Damen</option>
+      <option value="women" ${profile === "women" ? "selected" : ""}>Damen</option>
       <option value="men" ${profile === "men" ? "selected" : ""}>Herren</option>
     </select>
   `;
@@ -91,7 +65,7 @@ function enhanceRouteWeatherInput() {
   const textarea = document.createElement("textarea");
   textarea.name = "weatherLocation";
   textarea.rows = 3;
-  textarea.value = input.value;
+  textarea.value = stripProfileMarkers(input.value);
   textarea.placeholder = "Wetterorte – ein Ort pro Zeile, z. B. Passau, Wien, Budapest";
   textarea.setAttribute("aria-label", "Wetterorte entlang der Route");
   input.replaceWith(textarea);
@@ -116,8 +90,7 @@ async function showWeatherRoute() {
   summary.dataset.weatherRoute = "";
   summary.style.marginTop = "8px";
   summary.textContent = `Route: ${places.map(place => place.place).join(" · ")}`;
-  const head = weatherCard.querySelector(".progress-row");
-  head?.insertAdjacentElement("afterend", summary);
+  weatherCard.querySelector(".progress-row")?.insertAdjacentElement("afterend", summary);
 }
 
 async function enhanceCurrentView() {
@@ -140,13 +113,36 @@ document.addEventListener("change", async event => {
   const select = event.target.closest("[data-pack-profile]");
   if (!select) return;
   await setSetting(PROFILE_KEY, select.value);
-  await syncProfileItems();
+
+  const tripProfile = document.querySelector("#tripPackProfile");
+  if (tripProfile) tripProfile.value = select.value;
 });
 
-document.addEventListener("submit", event => {
-  if (event.target.id !== "tripForm") return;
-  setTimeout(() => syncProfileItems(), 600);
+document.addEventListener("click", async event => {
+  if (!event.target.closest("#openTripDialog,[data-action='new-trip']")) return;
+  const tripProfile = document.querySelector("#tripPackProfile");
+  if (tripProfile) tripProfile.value = await getSetting(PROFILE_KEY, "neutral");
 }, true);
 
-await syncProfileItems();
+document.addEventListener("submit", async event => {
+  if (event.target.id === "tripForm") {
+    const profile = event.target.elements.packProfile?.value || await getSetting(PROFILE_KEY, "neutral");
+    const weatherField = event.target.elements.weatherLocation;
+    if (weatherField) weatherField.value = withProfileMarker(weatherField.value, profile);
+    return;
+  }
+
+  if (event.target.id === "weatherLocationForm") {
+    const currentTripId = await getSetting("currentTripId", null);
+    const trip = currentTripId ? await get("trips", currentTripId) : null;
+    const marker = String(trip?.weatherLocation || "")
+      .split(/\r?\n/)
+      .find(line => line.trim().startsWith(PROFILE_MARKER_PREFIX));
+    if (marker && event.target.elements.weatherLocation) {
+      const clean = stripProfileMarkers(event.target.elements.weatherLocation.value);
+      event.target.elements.weatherLocation.value = [clean, marker.trim()].filter(Boolean).join("\n");
+    }
+  }
+}, true);
+
 await enhanceCurrentView();
