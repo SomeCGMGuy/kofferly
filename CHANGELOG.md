@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.3.3 – 2026-09-07
+
+### Design
+- Header-Wordmark auf `Kofferly.` mit Punkt umgestellt.
+
+### Packliste
+- Neue Live-Suche direkt oberhalb der Kategorien.
+- Suche berücksichtigt Aufgabenname, Begründung und Kategorie und blendet nicht passende Kategorien aus.
+- Trefferanzahl und leerer Suchzustand ergänzt.
+- Neuer dauerhaft erreichbarer `+ Aufgabe`-Button oberhalb der Bottom-Navigation.
+- Aufgaben lassen sich damit ohne Scrollen bis zum Listenende hinzufügen.
+- Schnellerfassung nutzt das bestehende Push-Navigationsmuster und übernimmt vorhandene Kategorien sowie die `wichtig`-Markierung.
+- Die bestehende Packlogik und Mengen-/Wetterberechnung bleiben unverändert.
+
+### PWA
+- Service-Worker-Cache auf `kofferly-shell-v7` angehoben.
+- Neue Packlisten-Werkzeuge werden offline mit gecacht.
+
 ## 0.3.2 – 2026-09-07
 
 ### Behoben
