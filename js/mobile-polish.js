@@ -1,12 +1,15 @@
 const view = document.querySelector("#view");
 const PACK_HINT_KEY = "kofferly:pack-edit-hint:v1";
 const STYLE_ID = "kofferly-mobile-polish-style";
+const tripThumbCache = new Map();
 
 if (!document.querySelector(`#${STYLE_ID}`)) {
   const style = document.createElement("style");
   style.id = STYLE_ID;
   style.textContent = `
     .hero-media{background-image:var(--kofferly-hero-image,none),linear-gradient(135deg,#648c75,#214f3f);background-size:cover;background-position:center}
+    .trip-thumb.has-cached-image{background-image:var(--kofferly-trip-thumb,none);background-size:cover;background-position:center;font-size:0}
+    .trip-thumb.has-cached-image img{background:transparent}
     .pack-edit-coachmark{display:flex;align-items:center;gap:8px;margin:-4px 0 12px;padding:0 2px;color:var(--muted);font-size:.78rem;line-height:1.35}
     .pack-edit-coachmark svg{width:17px;height:17px;flex:0 0 auto;fill:none;stroke:var(--forest);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
     .pack-edit-coachmark strong{color:var(--forest);font-weight:800}
@@ -49,6 +52,20 @@ function syncHeroBackground() {
   document.documentElement.style.setProperty("--kofferly-hero-image", `url("${image.src.replace(/"/g, "%22")}")`);
 }
 
+function syncTripThumbs() {
+  for (const holder of view?.querySelectorAll("[data-trip-thumb]") || []) {
+    const id = holder.dataset.tripThumb;
+    const image = holder.querySelector("img");
+
+    if (image?.src) tripThumbCache.set(id, image.src);
+    const cached = tripThumbCache.get(id);
+    if (!cached) continue;
+
+    holder.style.setProperty("--kofferly-trip-thumb", `url("${cached.replace(/"/g, "%22")}")`);
+    holder.classList.add("has-cached-image");
+  }
+}
+
 function watchPackEditor() {
   const dialog = document.querySelector("#packItemEditDialog");
   if (!dialog || dialog.dataset.coachmarkWatch === "true") return;
@@ -67,6 +84,7 @@ function refreshPolish() {
     scheduled = false;
     maybeAddPackHint();
     syncHeroBackground();
+    syncTripThumbs();
     watchPackEditor();
   });
 }
