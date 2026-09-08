@@ -1,3 +1,5 @@
+import "./mobile-polish.js";
+
 const REFRESH_PARAM = "kofferly-refresh";
 const APP_CACHE_PREFIX = "kofferly-shell-";
 
