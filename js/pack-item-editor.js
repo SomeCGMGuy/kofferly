@@ -3,6 +3,8 @@ import { get, put } from "./db.js";
 const view = document.querySelector("#view");
 const STYLE_ID = "pack-item-editor-style";
 const DIALOG_ID = "packItemEditDialog";
+const LONG_PRESS_MS = 550;
+const MOVE_TOLERANCE = 12;
 
 if (!document.querySelector(`#${STYLE_ID}`)) {
   const link = document.createElement("link");
@@ -42,6 +44,11 @@ document.body.append(dialog);
 const form = dialog.querySelector("#packItemEditForm");
 let currentItem = null;
 let enhanceScheduled = false;
+let pressTimer = null;
+let pressTarget = null;
+let pressStartX = 0;
+let pressStartY = 0;
+let longPressTriggered = false;
 
 function isGenerated(item) {
   return item?.source === "generated" || Boolean(item?.key);
@@ -113,15 +120,11 @@ async function enhanceRow(row) {
   if (!id || row.dataset.packEditReady === "true") return;
 
   row.dataset.packEditReady = "true";
-  const deleteButton = row.querySelector(".item-delete[data-id]");
-  if (deleteButton && !row.querySelector("[data-edit-pack-item]")) {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "item-edit";
-    button.dataset.editPackItem = id;
-    button.setAttribute("aria-label", "Eintrag bearbeiten");
-    button.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 20 4.5-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L4 20Zm10-12 3 3"/></svg>`;
-    deleteButton.before(button);
+  row.querySelector("[data-edit-pack-item]")?.remove();
+  const copy = row.querySelector(".item-copy");
+  if (copy) {
+    copy.dataset.longpressEditPackItem = id;
+    copy.setAttribute("aria-description", "Gedrückt halten zum Bearbeiten");
   }
 
   try {
@@ -159,6 +162,12 @@ async function openEditor(id) {
   form.querySelector("[data-generated-hint]").hidden = !isGenerated(item);
   dialog.showModal();
   setTimeout(() => form.elements.name.focus({ preventScroll: true }), 80);
+}
+
+function clearPress() {
+  if (pressTimer) clearTimeout(pressTimer);
+  pressTimer = null;
+  pressTarget = null;
 }
 
 function clearManual(row, key) {
@@ -201,12 +210,43 @@ form.addEventListener("submit", async event => {
   dialog.close("saved");
 });
 
+document.addEventListener("pointerdown", event => {
+  const target = event.target.closest("[data-longpress-edit-pack-item]");
+  if (!target || dialog.open || event.button > 0) return;
+
+  clearPress();
+  pressTarget = target;
+  pressStartX = event.clientX;
+  pressStartY = event.clientY;
+  longPressTriggered = false;
+  pressTimer = setTimeout(() => {
+    const id = pressTarget?.dataset.longpressEditPackItem;
+    clearPress();
+    if (!id) return;
+    longPressTriggered = true;
+    openEditor(id).catch(console.error);
+  }, LONG_PRESS_MS);
+}, { passive: true });
+
+document.addEventListener("pointermove", event => {
+  if (!pressTimer || !pressTarget) return;
+  const dx = event.clientX - pressStartX;
+  const dy = event.clientY - pressStartY;
+  if (Math.hypot(dx, dy) > MOVE_TOLERANCE) clearPress();
+}, { passive: true });
+
+document.addEventListener("pointerup", clearPress, { passive: true });
+document.addEventListener("pointercancel", clearPress, { passive: true });
+
+document.addEventListener("contextmenu", event => {
+  if (event.target.closest("[data-longpress-edit-pack-item]")) event.preventDefault();
+});
+
 document.addEventListener("click", event => {
-  const edit = event.target.closest("[data-edit-pack-item]");
-  if (edit) {
+  if (longPressTriggered && event.target.closest("[data-longpress-edit-pack-item]")) {
+    longPressTriggered = false;
     event.preventDefault();
     event.stopPropagation();
-    openEditor(edit.dataset.editPackItem).catch(console.error);
     return;
   }
   if (event.target.closest("[data-pack-edit-close]")) dialog.close("cancel");
