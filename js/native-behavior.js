@@ -1,3 +1,5 @@
+import "./pack-item-editor.js";
+
 const view = document.querySelector("#view");
 const bottomNav = document.querySelector(".bottom-nav");
 const dialogs = [...document.querySelectorAll("dialog")];
@@ -170,9 +172,6 @@ document.addEventListener("keydown", event => {
 });
 
 window.addEventListener("popstate", event => {
-  // A dialog closed itself and is only removing its own history entry.
-  // Do not treat that internal history cleanup as another Android Back action,
-  // otherwise a parent sheet below a nested choice sheet would close as well.
   if (internalHistoryClose) {
     internalHistoryClose = false;
     return;
