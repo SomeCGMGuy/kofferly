@@ -1,7 +1,6 @@
 const choiceDialog = document.querySelector("#choiceSheetDialog");
 const choiceTitle = document.querySelector("#choiceSheetTitle");
 const choiceOptions = document.querySelector("#choiceSheetOptions");
-const sheetDialogs = [...document.querySelectorAll("dialog.sheet-dialog")];
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 let activeSelect = null;
 
@@ -82,8 +81,12 @@ function prepareSheet(dialog) {
     delete dialog.dataset.backdropPointer;
   });
 }
+function prepareSheets(root = document) {
+  if (root instanceof HTMLDialogElement && root.matches("dialog.sheet-dialog")) prepareSheet(root);
+  root.querySelectorAll?.("dialog.sheet-dialog").forEach(prepareSheet);
+}
 
-sheetDialogs.forEach(prepareSheet);
+prepareSheets();
 enhanceSelects();
 
 const observer = new MutationObserver(mutations => {
@@ -94,6 +97,7 @@ const observer = new MutationObserver(mutations => {
       if (!(node instanceof Element)) return;
       if (node.matches("select")) { enhanceSelect(node); touchedSelects.add(node); }
       if (node.matches("option") && node.parentElement instanceof HTMLSelectElement) touchedSelects.add(node.parentElement);
+      prepareSheets(node);
       enhanceSelects(node);
     });
   }
