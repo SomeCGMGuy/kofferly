@@ -1,4 +1,4 @@
-const CACHE = "kofferly-shell-v32";
+const CACHE = "kofferly-shell-v33";
 const ASSETS = [
   "./",
   "./index.html",
@@ -6,6 +6,7 @@ const ASSETS = [
   "./v030.css",
   "./android-ui.css",
   "./onboarding.css",
+  "./pack-item-editor.css",
   "./manifest.webmanifest",
   "./VERSION",
   "./icons/icon.svg",
@@ -15,6 +16,7 @@ const ASSETS = [
   "./js/android-ui.js",
   "./js/native-behavior.js",
   "./js/onboarding.js",
+  "./js/pack-item-editor.js",
   "./js/push-navigation.js",
   "./js/app.js",
   "./js/v030.js",
