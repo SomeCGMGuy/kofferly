@@ -36,7 +36,7 @@ async function currentTripSnapshot() {
 
   if (!trip) return null;
 
-  const items = await getByIndex("packItems", "tripId", trip.id);
+  const items = (await getByIndex("packItems", "tripId", trip.id)).filter(item => !item.dismissed);
   const weather = await get("weather", trip.id);
   return { trip, items, weather };
 }
