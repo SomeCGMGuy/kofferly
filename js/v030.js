@@ -45,6 +45,7 @@ function candidateNotifications({ trip, items, weather }) {
   const days = daysUntil(trip.date);
   const open = items.filter(item => !item.checked);
   const important = open.filter(item => item.important);
+  const urgent = days === 0 && important.length > 0;
   const notes = [];
 
   if (days >= 0 && days <= 7) {
@@ -59,11 +60,16 @@ function candidateNotifications({ trip, items, weather }) {
   if (open.length) {
     notes.push({
       id: `${trip.id}:open:${open.length}:${important.length}`,
-      icon: "✓",
-      title: `${open.length} ${open.length === 1 ? "Ding ist" : "Dinge sind"} noch offen`,
-      text: important.length
-        ? `Davon ${important.length} ${important.length === 1 ? "wichtiger Punkt" : "wichtige Punkte"}.`
-        : "Keine wichtigen Punkte mehr offen."
+      icon: urgent ? "!" : "✓",
+      level: urgent ? "urgent" : "normal",
+      title: urgent
+        ? `${important.length} ${important.length === 1 ? "wichtiger Punkt ist" : "wichtige Punkte sind"} noch offen`
+        : `${open.length} ${open.length === 1 ? "Ding ist" : "Dinge sind"} noch offen`,
+      text: urgent
+        ? "Bitte prüfe die wichtigen Dinge vor der Abreise noch einmal."
+        : important.length
+          ? `Davon ${important.length} ${important.length === 1 ? "wichtiger Punkt" : "wichtige Punkte"}.`
+          : "Keine wichtigen Punkte mehr offen."
     });
   } else if (items.length) {
     notes.push({
@@ -98,14 +104,16 @@ async function refreshNotificationUi(markRead = false, snapshotOverride = null) 
   const notes = snapshot ? candidateNotifications(snapshot) : [];
   const readIds = new Set(await getSetting("notificationReadIds", []));
   const unread = notes.filter(note => !readIds.has(note.id));
+  const hasUrgentUnread = unread.some(note => note.level === "urgent");
 
   badge.hidden = unread.length === 0;
   badge.textContent = String(unread.length);
+  badge.classList.toggle("urgent", hasUrgentUnread);
   bell?.setAttribute("aria-label", unread.length ? `Benachrichtigungen, ${unread.length} ungelesen` : "Benachrichtigungen");
 
   list.innerHTML = notes.length
     ? notes.map(note => `
-      <article class="notification-item ${readIds.has(note.id) ? "read" : "unread"}">
+      <article class="notification-item ${readIds.has(note.id) ? "read" : "unread"} ${note.level === "urgent" ? "urgent" : ""}">
         <span class="notification-item-icon" aria-hidden="true">${esc(note.icon)}</span>
         <div>
           <strong>${esc(note.title)}</strong>
@@ -120,6 +128,7 @@ async function refreshNotificationUi(markRead = false, snapshotOverride = null) 
     const next = [...new Set([...readIds, ...notes.map(note => note.id)])].slice(-100);
     await setSetting("notificationReadIds", next);
     badge.hidden = true;
+    badge.classList.remove("urgent");
   }
 }
 
@@ -146,17 +155,21 @@ function buildCountdownCard({ trip, items }) {
   const open = items.filter(item => !item.checked);
   const important = open.filter(item => item.important);
   const ready = items.length > 0 && open.length === 0;
+  const urgent = days === 0 && important.length > 0;
+  const status = ready ? "ready" : urgent ? "urgent" : "open";
 
   const card = document.createElement("section");
-  card.className = `mockup-countdown-card ${ready ? "ready" : "open"}`;
+  card.className = `mockup-countdown-card ${status}`;
   card.innerHTML = `
-    <div class="countdown-plane" aria-hidden="true">✈</div>
+    <div class="countdown-plane" aria-hidden="true">${urgent ? "!" : "✈"}</div>
     <div class="countdown-copy">
-      <p class="eyebrow">${ready ? "Alles erledigt" : "Noch etwas zu erledigen"}</p>
-      <h2>${esc(ready ? "Alles bereit" : tripStartText(days))}</h2>
+      <p class="eyebrow">${ready ? "Alles erledigt" : urgent ? "Vor der Abreise prüfen" : "Noch etwas zu erledigen"}</p>
+      <h2>${esc(ready ? "Alles bereit" : urgent ? "Wichtige Dinge sind noch offen" : tripStartText(days))}</h2>
       <p>${ready
         ? "Die wichtigen Dinge sind erledigt. Jetzt darf die Vorfreude übernehmen."
-        : `${open.length} ${open.length === 1 ? "Ding ist" : "Dinge sind"} noch offen${important.length ? `, davon ${important.length} wichtig` : ""}.`}</p>
+        : urgent
+          ? `${important.length} ${important.length === 1 ? "wichtiger Punkt ist" : "wichtige Punkte sind"} noch offen${open.length > important.length ? ` · insgesamt ${open.length} offene Dinge` : ""}.`
+          : `${open.length} ${open.length === 1 ? "Ding ist" : "Dinge sind"} noch offen${important.length ? `, davon ${important.length} wichtig` : ""}.`}</p>
     </div>
     <button class="countdown-link" data-route="packing">${ready ? "Packliste ansehen" : "Zur Packliste"}<span aria-hidden="true">→</span></button>
   `;
