@@ -2,6 +2,7 @@ const view = document.querySelector("#view");
 const PACK_HINT_KEY = "kofferly:pack-edit-hint:v1";
 const STYLE_ID = "kofferly-mobile-polish-style";
 const tripThumbCache = new Map();
+let showCompletedPacking = false;
 
 if (!document.querySelector(`#${STYLE_ID}`)) {
   const style = document.createElement("style");
@@ -13,7 +14,13 @@ if (!document.querySelector(`#${STYLE_ID}`)) {
     .pack-edit-coachmark{display:flex;align-items:center;gap:8px;margin:-4px 0 12px;padding:0 2px;color:var(--muted);font-size:.78rem;line-height:1.35}
     .pack-edit-coachmark svg{width:17px;height:17px;flex:0 0 auto;fill:none;stroke:var(--forest);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
     .pack-edit-coachmark strong{color:var(--forest);font-weight:800}
-    @media (max-width:420px){.pack-edit-coachmark{font-size:.75rem}}
+    .pack-completed-filter{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 12px;padding:11px 14px;border:1px solid var(--line);border-radius:16px;background:#fbfaf5;color:var(--muted);font-size:.82rem;font-weight:800}
+    .pack-completed-filter button{border:0;background:transparent;color:var(--forest);font:inherit;font-weight:900;padding:5px 2px}
+    .category.is-complete-collapsed{padding-top:12px;padding-bottom:12px;background:linear-gradient(135deg,var(--sage),#fbfdfb);border-color:var(--forest-3)}
+    .category.is-complete-collapsed .pack-items{display:none}
+    .category.is-complete-collapsed [data-action="check-category"]{display:none}
+    .category.is-complete-collapsed .category-title::after{content:"✓ erledigt";margin-left:8px;color:var(--forest);font-size:.72rem;font-weight:900}
+    @media (max-width:420px){.pack-edit-coachmark{font-size:.75rem}.pack-completed-filter{font-size:.78rem}}
   `;
   document.head.append(style);
 }
@@ -46,6 +53,53 @@ function maybeAddPackHint() {
   sectionHead.insertAdjacentElement("afterend", hint);
 }
 
+function syncPackingCompletedFilter() {
+  if (!view) return;
+  const heading = view.querySelector(".section-head h1");
+  const isPacking = heading?.textContent?.trim() === "Packliste";
+  const existingFilter = view.querySelector(".pack-completed-filter");
+
+  if (!isPacking) {
+    existingFilter?.remove();
+    return;
+  }
+
+  const categories = [...view.querySelectorAll(".list .category")];
+  const items = categories.flatMap(category => [...category.querySelectorAll(".pack-item")]);
+  if (!items.length) {
+    existingFilter?.remove();
+    return;
+  }
+
+  const completed = items.filter(item => item.classList.contains("checked") || item.querySelector('input[type="checkbox"]')?.checked);
+
+  for (const category of categories) {
+    const categoryItems = [...category.querySelectorAll(".pack-item")];
+    const completedItems = categoryItems.filter(item => item.classList.contains("checked") || item.querySelector('input[type="checkbox"]')?.checked);
+    const complete = categoryItems.length > 0 && completedItems.length === categoryItems.length;
+
+    for (const item of categoryItems) {
+      const checked = item.classList.contains("checked") || item.querySelector('input[type="checkbox"]')?.checked;
+      item.hidden = !showCompletedPacking && checked;
+    }
+
+    category.classList.toggle("is-complete-collapsed", !showCompletedPacking && complete);
+  }
+
+  if (!completed.length) {
+    existingFilter?.remove();
+    return;
+  }
+
+  const list = categories[0]?.closest(".list");
+  if (!list) return;
+
+  const filter = existingFilter || document.createElement("div");
+  filter.className = "pack-completed-filter";
+  filter.innerHTML = `<span>✓ ${completed.length} ${completed.length === 1 ? "erledigt" : "erledigt"}</span><button type="button" data-completed-toggle>${showCompletedPacking ? "Erledigte ausblenden" : "Anzeigen"}</button>`;
+  if (!existingFilter) list.insertAdjacentElement("beforebegin", filter);
+}
+
 function syncHeroBackground() {
   const image = view?.querySelector(".hero-media img");
   if (!image?.src) return;
@@ -76,6 +130,13 @@ function watchPackEditor() {
   observer.observe(dialog, { attributes: true, attributeFilter: ["open"] });
 }
 
+document.addEventListener("click", event => {
+  const toggle = event.target.closest("[data-completed-toggle]");
+  if (!toggle) return;
+  showCompletedPacking = !showCompletedPacking;
+  syncPackingCompletedFilter();
+});
+
 let scheduled = false;
 function refreshPolish() {
   if (scheduled) return;
@@ -83,6 +144,7 @@ function refreshPolish() {
   queueMicrotask(() => {
     scheduled = false;
     maybeAddPackHint();
+    syncPackingCompletedFilter();
     syncHeroBackground();
     syncTripThumbs();
     watchPackEditor();
