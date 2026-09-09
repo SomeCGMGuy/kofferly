@@ -1,4 +1,5 @@
 import "./pack-item-editor.js";
+import "./mobile-polish.js";
 
 const view = document.querySelector("#view");
 const bottomNav = document.querySelector(".bottom-nav");
