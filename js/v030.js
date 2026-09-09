@@ -81,7 +81,11 @@ function candidateNotifications({ trip, items, weather }) {
       id: `${trip.id}:weather:${trip.date}`,
       icon: "☁",
       title: "Wetter vor der Abfahrt prüfen",
-      text: "Aktualisiere die Vorhersage noch einmal, damit die Packempfehlung zum neuesten Stand passt."
+      text: "Aktualisiere die Vorhersage noch einmal, damit die Packempfehlung zum neuesten Stand passt.",
+      action: navigator.onLine ? {
+        label: "Wetter aktualisieren",
+        dataAction: "refresh-weather"
+      } : null
     });
   }
 
@@ -106,6 +110,7 @@ async function refreshNotificationUi(markRead = false, snapshotOverride = null) 
         <div>
           <strong>${esc(note.title)}</strong>
           <p>${esc(note.text)}</p>
+          ${note.action ? `<button class="notification-action" type="button" data-action="${esc(note.action.dataAction)}">${esc(note.action.label)}</button>` : ""}
         </div>
       </article>
     `).join("")
