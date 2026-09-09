@@ -57,17 +57,17 @@ function syncPackingCompletedFilter() {
   if (!view) return;
   const heading = view.querySelector(".section-head h1");
   const isPacking = heading?.textContent?.trim() === "Packliste";
-  const existingFilter = view.querySelector(".pack-completed-filter");
+  let filter = view.querySelector(".pack-completed-filter");
 
   if (!isPacking) {
-    existingFilter?.remove();
+    filter?.remove();
     return;
   }
 
   const categories = [...view.querySelectorAll(".list .category")];
   const items = categories.flatMap(category => [...category.querySelectorAll(".pack-item")]);
   if (!items.length) {
-    existingFilter?.remove();
+    filter?.remove();
     return;
   }
 
@@ -87,17 +87,26 @@ function syncPackingCompletedFilter() {
   }
 
   if (!completed.length) {
-    existingFilter?.remove();
+    filter?.remove();
     return;
   }
 
   const list = categories[0]?.closest(".list");
   if (!list) return;
 
-  const filter = existingFilter || document.createElement("div");
-  filter.className = "pack-completed-filter";
-  filter.innerHTML = `<span>✓ ${completed.length} ${completed.length === 1 ? "erledigt" : "erledigt"}</span><button type="button" data-completed-toggle>${showCompletedPacking ? "Erledigte ausblenden" : "Anzeigen"}</button>`;
-  if (!existingFilter) list.insertAdjacentElement("beforebegin", filter);
+  if (!filter) {
+    filter = document.createElement("div");
+    filter.className = "pack-completed-filter";
+    filter.innerHTML = '<span data-completed-count></span><button type="button" data-completed-toggle></button>';
+    list.insertAdjacentElement("beforebegin", filter);
+  }
+
+  const count = filter.querySelector("[data-completed-count]");
+  const toggle = filter.querySelector("[data-completed-toggle]");
+  const countText = `✓ ${completed.length} erledigt`;
+  const toggleText = showCompletedPacking ? "Erledigte ausblenden" : "Anzeigen";
+  if (count && count.textContent !== countText) count.textContent = countText;
+  if (toggle && toggle.textContent !== toggleText) toggle.textContent = toggleText;
 }
 
 function syncHeroBackground() {
