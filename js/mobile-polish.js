@@ -14,12 +14,14 @@ if (!document.querySelector(`#${STYLE_ID}`)) {
     .pack-edit-coachmark{display:flex;align-items:center;gap:8px;margin:-4px 0 12px;padding:0 2px;color:var(--muted);font-size:.78rem;line-height:1.35}
     .pack-edit-coachmark svg{width:17px;height:17px;flex:0 0 auto;fill:none;stroke:var(--forest);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
     .pack-edit-coachmark strong{color:var(--forest);font-weight:800}
-    .pack-completed-filter{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 12px;padding:11px 14px;border:1px solid var(--line);border-radius:16px;background:#fbfaf5;color:var(--muted);font-size:.82rem;font-weight:800}
-    .pack-completed-filter button{border:0;background:transparent;color:var(--forest);font:inherit;font-weight:900;padding:5px 2px}
-    .category.is-complete-collapsed{padding-top:12px;padding-bottom:12px;background:linear-gradient(135deg,var(--sage),#fbfdfb);border-color:var(--forest-3)}
+    .pack-completed-filter{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:2px 2px 14px;padding:10px 4px;border-top:1px solid rgba(219,228,222,.72);border-bottom:1px solid rgba(219,228,222,.72);color:var(--muted);font-size:.82rem;font-weight:800}
+    .pack-completed-filter [data-completed-count]{display:flex;align-items:center;gap:6px;color:var(--ink)}
+    .pack-completed-filter button{border:0;background:transparent;color:var(--forest);font:inherit;font-weight:900;padding:6px 2px;display:flex;align-items:center;gap:5px}
+    .pack-completed-filter button::after{content:"›";font-size:1.25em;line-height:1;transition:transform .18s ease}
+    .pack-completed-filter.is-expanded button::after{transform:rotate(180deg)}
     .category.is-complete-collapsed .pack-items{display:none}
-    .category.is-complete-collapsed [data-action="check-category"]{display:none}
-    .category.is-complete-collapsed .category-title::after{content:"✓ erledigt";margin-left:8px;color:var(--forest);font-size:.72rem;font-weight:900}
+    .category.is-complete-collapsed .category-head{border-bottom:0;background:#fbfaf5}
+    .category.is-complete-collapsed [data-action="check-category"].pack-complete-status{display:inline-flex;align-items:center;gap:5px;background:var(--sage);color:var(--forest);cursor:default;opacity:1}
     @media (max-width:420px){.pack-edit-coachmark{font-size:.75rem}.pack-completed-filter{font-size:.78rem}}
   `;
   document.head.append(style);
@@ -77,13 +79,28 @@ function syncPackingCompletedFilter() {
     const categoryItems = [...category.querySelectorAll(".pack-item")];
     const completedItems = categoryItems.filter(item => item.classList.contains("checked") || item.querySelector('input[type="checkbox"]')?.checked);
     const complete = categoryItems.length > 0 && completedItems.length === categoryItems.length;
+    const collapsed = !showCompletedPacking && complete;
+    const categoryAction = category.querySelector('[data-action="check-category"]');
 
     for (const item of categoryItems) {
       const checked = item.classList.contains("checked") || item.querySelector('input[type="checkbox"]')?.checked;
       item.hidden = !showCompletedPacking && checked;
     }
 
-    category.classList.toggle("is-complete-collapsed", !showCompletedPacking && complete);
+    category.classList.toggle("is-complete-collapsed", collapsed);
+
+    if (categoryAction) {
+      categoryAction.classList.toggle("pack-complete-status", collapsed);
+      if (collapsed) {
+        if (categoryAction.textContent !== "✓ Erledigt") categoryAction.textContent = "✓ Erledigt";
+        categoryAction.disabled = true;
+      } else if (complete) {
+        if (categoryAction.textContent !== "Zurücksetzen") categoryAction.textContent = "Zurücksetzen";
+        categoryAction.disabled = false;
+      } else {
+        categoryAction.disabled = false;
+      }
+    }
   }
 
   if (!completed.length) {
@@ -101,10 +118,11 @@ function syncPackingCompletedFilter() {
     list.insertAdjacentElement("beforebegin", filter);
   }
 
+  filter.classList.toggle("is-expanded", showCompletedPacking);
   const count = filter.querySelector("[data-completed-count]");
   const toggle = filter.querySelector("[data-completed-toggle]");
   const countText = `✓ ${completed.length} erledigt`;
-  const toggleText = showCompletedPacking ? "Erledigte ausblenden" : "Anzeigen";
+  const toggleText = showCompletedPacking ? "Ausblenden" : "Anzeigen";
   if (count && count.textContent !== countText) count.textContent = countText;
   if (toggle && toggle.textContent !== toggleText) toggle.textContent = toggleText;
 }
