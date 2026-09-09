@@ -130,8 +130,9 @@ async function syncGeneratedPacking(showToast = true) {
 
   const generated = generatePackingRecommendations(state.currentTrip, state.weather);
   const generatedKeys = new Set(generated.map(item => item.key));
-  const managedExisting = state.items.filter(item => item.source === "generated" || isLegacyGenerated(item));
-  const custom = state.items.filter(item => item.source !== "generated" && !isLegacyGenerated(item));
+  const storedItems = await getByIndex("packItems", "tripId", state.currentTrip.id);
+  const managedExisting = storedItems.filter(item => item.source === "generated" || isLegacyGenerated(item));
+  const custom = storedItems.filter(item => item.source !== "generated" && !isLegacyGenerated(item));
 
   const byKey = new Map(managedExisting.filter(i => i.key).map(i => [i.key, i]));
   const byName = new Map(managedExisting.map(i => [i.name, i]));
@@ -148,13 +149,13 @@ async function syncGeneratedPacking(showToast = true) {
       createdAt: existing?.createdAt || new Date().toISOString()
     };
     await put("packItems", row);
-    nextManaged.push(row);
+    if (!row.dismissed) nextManaged.push(row);
   }
 
   for (const old of managedExisting) {
     const keyStillUsed = old.key && generatedKeys.has(old.key);
     const nameStillUsed = generated.some(item => item.name === old.name);
-    if (!keyStillUsed && !nameStillUsed) await del("packItems", old.id);
+    if (!old.dismissed && !keyStillUsed && !nameStillUsed) await del("packItems", old.id);
   }
 
   state.items = [...nextManaged, ...custom];
@@ -690,7 +691,12 @@ document.addEventListener("click", async event => {
     if (!item) return;
     const ok = await confirmDelete("Eintrag löschen?", `„${item.name}“ wird aus dieser Reise entfernt.`);
     if (!ok) return;
-    await del("packItems", item.id);
+    if (item.source === "generated" || isLegacyGenerated(item)) {
+      item.dismissed = true;
+      await put("packItems", item);
+    } else {
+      await del("packItems", item.id);
+    }
     state.items = state.items.filter(i => i.id !== item.id);
     renderPacking();
   }
