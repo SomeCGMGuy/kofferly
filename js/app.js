@@ -63,6 +63,10 @@ function formatRelative(days) {
   return `${Math.abs(days)} Tage seit Abreise`;
 }
 
+function packingIsReadOnly(trip = state.currentTrip) {
+  return Boolean(trip) && daysUntil(trip.date) < 0;
+}
+
 function toast(message) {
   document.querySelector(".toast")?.remove();
   const el = document.createElement("div");
@@ -112,7 +116,7 @@ async function selectTrip(id, rerender = true) {
     state.image = await getDestinationImage(state.currentTrip.id);
     state.imageUrl = imageObjectUrl(state.image);
     state.weather = await getWeather(state.currentTrip.id);
-    await syncGeneratedPacking(false);
+    if (!packingIsReadOnly()) await syncGeneratedPacking(false);
   } else {
     state.items = [];
     state.image = null;
@@ -126,7 +130,7 @@ function isLegacyGenerated(item) {
 }
 
 async function syncGeneratedPacking(showToast = true) {
-  if (!state.currentTrip) return;
+  if (!state.currentTrip || packingIsReadOnly()) return;
 
   const generated = generatePackingRecommendations(state.currentTrip, state.weather);
   const generatedKeys = new Set(generated.map(item => item.key));
@@ -244,9 +248,10 @@ async function refreshWeatherData(showToast = true) {
     const row = await refreshWeather(state.currentTrip);
     if (state.currentTrip?.id !== targetTripId) return;
     state.weather = row;
-    await syncGeneratedPacking(false);
+    const readOnly = packingIsReadOnly();
+    if (!readOnly) await syncGeneratedPacking(false);
     render();
-    if (showToast) toast("Wetter aktualisiert · Packliste angepasst");
+    if (showToast) toast(readOnly ? "Wetter aktualisiert" : "Wetter aktualisiert · Packliste angepasst");
   } catch (err) {
     console.error(err);
     state.weatherError = err?.message || "Wetter konnte nicht aktualisiert werden.";
@@ -298,6 +303,7 @@ function renderHome() {
 
   const trip = state.currentTrip;
   const days = daysUntil(trip.date);
+  const packingReadOnly = packingIsReadOnly(trip);
   const stats = packingStats();
   const reminder = buildReminder(trip, state.items);
   const weatherDays = weatherForTrip();
@@ -326,7 +332,7 @@ function renderHome() {
         <h1>${escapeHtml(trip.destination)}</h1>
         <p>${trip.note ? escapeHtml(trip.note) : "Besser packen. Entspannter reisen."}</p>
         <div class="quick-actions">
-          <button class="button primary" data-route="packing">Packliste öffnen</button>
+          <button class="button primary" data-route="packing">${packingReadOnly ? "Packliste ansehen" : "Packliste öffnen"}</button>
           <button class="button secondary" data-action="refresh-image">Anderes Bild</button>
         </div>
       </div>
@@ -345,6 +351,7 @@ function renderHome() {
           </div>
         </section>
 
+        ${packingReadOnly ? "" : `
         <section class="info-card card">
           <p class="eyebrow">Deine Packempfehlung</p>
           <h2>${escapeHtml(recommendationHeadline(trip, state.weather))}</h2>
@@ -374,7 +381,7 @@ function renderHome() {
           <div class="quick-actions">
             <button class="button secondary" data-route="packing">Weiterpacken</button>
           </div>
-        </section>
+        </section>`}
       </div>
 
       <div class="stack">
@@ -437,6 +444,52 @@ function renderPacking() {
   const groups = groupItems(state.items);
   const { days, nights } = tripLength(state.currentTrip);
   const recItems = recommendationItems();
+  const readOnly = packingIsReadOnly();
+
+  if (readOnly) {
+    view.innerHTML = `
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">${escapeHtml(state.currentTrip.destination)}</p>
+          <h1>Packliste</h1>
+        </div>
+      </div>
+
+      <section class="pack-summary card">
+        <p class="eyebrow">Reise läuft</p>
+        <h2 style="margin:0">Packphase abgeschlossen</h2>
+        <p class="muted">Die Packliste dieser Reise wird nicht mehr angepasst. Du kannst den letzten Stand weiterhin ansehen.</p>
+      </section>
+
+      <div class="list">
+        ${[...groups.entries()].map(([category, items]) => `
+          <section class="category card">
+            <div class="category-head">
+              <div class="category-title">
+                <strong>${escapeHtml(category)}</strong>
+                <span class="category-progress">${items.filter(i => i.checked).length}/${items.length}</span>
+              </div>
+            </div>
+            <div class="pack-items">
+              ${items.map(item => `
+                <div class="pack-item ${item.checked ? "checked" : ""}">
+                  <span class="item-copy">
+                    <span class="item-name">${escapeHtml(item.name)}</span>
+                    ${item.reason ? `<span class="item-reason">${escapeHtml(item.reason)}</span>` : ""}
+                  </span>
+                  <span style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end">
+                    ${quantityText(item) ? `<span class="quantity-badge">${escapeHtml(quantityText(item))}</span>` : ""}
+                    ${item.important ? `<span class="important-badge">wichtig</span>` : ""}
+                  </span>
+                </div>
+              `).join("")}
+            </div>
+          </section>
+        `).join("")}
+      </div>
+    `;
+    return;
+  }
 
   view.innerHTML = `
     <div class="section-head">
@@ -653,6 +706,7 @@ document.addEventListener("click", async event => {
   if (action === "refresh-weather") refreshWeatherData();
 
   if (action === "regenerate-packing") {
+    if (packingIsReadOnly()) return;
     await syncGeneratedPacking(true);
     renderPacking();
   }
@@ -663,6 +717,7 @@ document.addEventListener("click", async event => {
   }
 
   if (action === "toggle-item") {
+    if (packingIsReadOnly()) return;
     const item = state.items.find(i => i.id === target.dataset.id);
     if (!item) return;
     item.checked = target.checked;
@@ -671,6 +726,7 @@ document.addEventListener("click", async event => {
   }
 
   if (action === "check-category") {
+    if (packingIsReadOnly()) return;
     const items = state.items.filter(i => i.category === target.dataset.category);
     const allDone = items.every(i => i.checked);
     for (const item of items) {
@@ -687,6 +743,7 @@ document.addEventListener("click", async event => {
   }
 
   if (action === "delete-item") {
+    if (packingIsReadOnly()) return;
     const item = state.items.find(i => i.id === target.dataset.id);
     if (!item) return;
     const ok = await confirmDelete("Eintrag löschen?", `„${item.name}“ wird aus dieser Reise entfernt.`);
@@ -725,6 +782,7 @@ document.addEventListener("submit", async event => {
 
   if (event.target.id === "addItemForm") {
     event.preventDefault();
+    if (packingIsReadOnly()) return;
     const data = new FormData(event.target);
     const item = {
       id: uid(),
