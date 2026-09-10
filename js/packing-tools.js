@@ -101,6 +101,8 @@ function applySearch(query) {
 function enhancePackingView() {
   if (!isPackingView()) return;
 
+  const canAddItems = Boolean(view.querySelector("#addItemForm"));
+
   view.querySelector(".pack-summary")?.remove();
   view.querySelector("[data-action='regenerate-packing']")?.remove();
 
@@ -119,7 +121,9 @@ function enhancePackingView() {
     sectionHead?.insertAdjacentElement("afterend", search);
   }
 
-  if (!view.querySelector(".quick-add-task")) {
+  if (!canAddItems) {
+    view.querySelector(".quick-add-task")?.remove();
+  } else if (!view.querySelector(".quick-add-task")) {
     const fab = document.createElement("button");
     fab.type = "button";
     fab.className = "quick-add-task";
