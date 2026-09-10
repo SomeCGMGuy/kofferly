@@ -27,15 +27,14 @@ function tripStartText(days) {
 async function currentTripSnapshot() {
   const trips = (await getAll("trips")).sort((a,b) => a.date.localeCompare(b.date));
   const selected = await getSetting("currentTripId", null);
-  let trip = trips.find(t => t.id === selected);
+  const relevantTrips = trips.filter(trip => {
+    const days = daysUntil(trip.date);
+    return days >= 0 && days <= 7;
+  });
 
-  if (!trip) {
-    const today = new Date();
-    trip = trips.find(t => new Date(`${t.date}T23:59:59`) >= today) || trips.at(-1) || null;
-  }
+  if (!relevantTrips.length) return null;
 
-  if (!trip) return null;
-
+  const trip = relevantTrips.find(t => t.id === selected) || relevantTrips[0];
   const items = (await getByIndex("packItems", "tripId", trip.id)).filter(item => !item.dismissed);
   const weather = await get("weather", trip.id);
   return { trip, items, weather };
@@ -188,7 +187,9 @@ async function refreshSnapshotAndUi() {
   const snapshot = await currentTripSnapshot();
   cachedSnapshot = snapshot;
 
-  if (snapshot && !view.querySelector(".mockup-countdown-card")) {
+  if (!snapshot) {
+    view.querySelector(".mockup-countdown-card")?.remove();
+  } else if (!view.querySelector(".mockup-countdown-card")) {
     insertCountdownCardFromSnapshot(snapshot);
   }
 
