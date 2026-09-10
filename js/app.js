@@ -67,6 +67,19 @@ function packingIsReadOnly(trip = state.currentTrip) {
   return Boolean(trip) && daysUntil(trip.date) < 0;
 }
 
+function effectiveItemValue(item, field) {
+  const manualKey = `manual${field[0].toUpperCase()}${field.slice(1)}`;
+  return Object.prototype.hasOwnProperty.call(item || {}, manualKey) ? item[manualKey] : item?.[field];
+}
+
+function itemName(item) {
+  return effectiveItemValue(item, "name") || item?.name || "";
+}
+
+function itemImportant(item) {
+  return Boolean(effectiveItemValue(item, "important"));
+}
+
 function toast(message) {
   document.querySelector(".toast")?.remove();
   const el = document.createElement("div");
@@ -112,7 +125,7 @@ async function selectTrip(id, rerender = true) {
   state.currentTrip = state.trips.find(t => t.id === id) || null;
   if (state.currentTrip) {
     await setSetting("currentTripId", state.currentTrip.id);
-    state.items = await getByIndex("packItems", "tripId", state.currentTrip.id);
+    state.items = (await getByIndex("packItems", "tripId", state.currentTrip.id)).filter(item => !item.dismissed);
     state.image = await getDestinationImage(state.currentTrip.id);
     state.imageUrl = imageObjectUrl(state.image);
     state.weather = await getWeather(state.currentTrip.id);
@@ -136,7 +149,7 @@ async function syncGeneratedPacking(showToast = true) {
   const generatedKeys = new Set(generated.map(item => item.key));
   const storedItems = await getByIndex("packItems", "tripId", state.currentTrip.id);
   const managedExisting = storedItems.filter(item => item.source === "generated" || isLegacyGenerated(item));
-  const custom = storedItems.filter(item => item.source !== "generated" && !isLegacyGenerated(item));
+  const custom = storedItems.filter(item => !item.dismissed && item.source !== "generated" && !isLegacyGenerated(item));
 
   const byKey = new Map(managedExisting.filter(i => i.key).map(i => [i.key, i]));
   const byName = new Map(managedExisting.map(i => [i.name, i]));
@@ -294,8 +307,10 @@ function recommendationItems() {
 }
 
 function quantityText(item) {
-  if (item?.quantity == null || item.quantity === "") return "";
-  return `${item.quantity} ${item.unit || ""}`.trim();
+  const quantity = effectiveItemValue(item, "quantity");
+  const unit = effectiveItemValue(item, "unit") || "";
+  if (quantity == null || quantity === "") return "";
+  return `${quantity} ${unit}`.trim();
 }
 
 function renderHome() {
@@ -360,7 +375,7 @@ function renderHome() {
             ${recItems.map(item => `
               <div class="pack-summary-chip">
                 <strong>${escapeHtml(quantityText(item))}</strong>
-                <small>${escapeHtml(item.name)}</small>
+                <small>${escapeHtml(itemName(item))}</small>
               </div>
             `).join("")}
           </div>
@@ -474,12 +489,13 @@ function renderPacking() {
               ${items.map(item => `
                 <div class="pack-item ${item.checked ? "checked" : ""}">
                   <span class="item-copy">
-                    <span class="item-name">${escapeHtml(item.name)}</span>
+                    <span class="item-name">${escapeHtml(itemName(item))}</span>
                     ${item.reason ? `<span class="item-reason">${escapeHtml(item.reason)}</span>` : ""}
+                    ${item.note ? `<span class="item-note">${escapeHtml(item.note)}</span>` : ""}
                   </span>
                   <span style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end">
                     ${quantityText(item) ? `<span class="quantity-badge">${escapeHtml(quantityText(item))}</span>` : ""}
-                    ${item.important ? `<span class="important-badge">wichtig</span>` : ""}
+                    ${itemImportant(item) ? `<span class="important-badge">wichtig</span>` : ""}
                   </span>
                 </div>
               `).join("")}
@@ -506,7 +522,7 @@ function renderPacking() {
       <p class="muted">Kofferly rechnet Mengen mit Reserve und ergänzt wetter- bzw. zielabhängige Dinge automatisch.</p>
       <div class="pack-summary-grid">
         ${recItems.map(item => `
-          <div class="pack-summary-chip"><strong>${escapeHtml(quantityText(item))}</strong><small>${escapeHtml(item.name)}</small></div>
+          <div class="pack-summary-chip"><strong>${escapeHtml(quantityText(item))}</strong><small>${escapeHtml(itemName(item))}</small></div>
         `).join("")}
       </div>
     </section>
@@ -528,14 +544,14 @@ function renderPacking() {
             <div class="pack-items">
               ${items.map(item => `
                 <div class="pack-item ${item.checked ? "checked" : ""}">
-                  <input type="checkbox" ${item.checked ? "checked" : ""} data-action="toggle-item" data-id="${item.id}" aria-label="${escapeHtml(item.name)}">
+                  <input type="checkbox" ${item.checked ? "checked" : ""} data-action="toggle-item" data-id="${item.id}" aria-label="${escapeHtml(itemName(item))}">
                   <span class="item-copy">
-                    <span class="item-name">${escapeHtml(item.name)}</span>
+                    <span class="item-name">${escapeHtml(itemName(item))}</span>
                     ${item.reason ? `<span class="item-reason">${escapeHtml(item.reason)}</span>` : ""}
                   </span>
                   <span style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end">
                     ${quantityText(item) ? `<span class="quantity-badge">${escapeHtml(quantityText(item))}</span>` : ""}
-                    ${item.important ? `<span class="important-badge">wichtig</span>` : ""}
+                    ${itemImportant(item) ? `<span class="important-badge">wichtig</span>` : ""}
                     <button class="item-delete" data-action="delete-item" data-id="${item.id}" aria-label="Eintrag löschen">×</button>
                   </span>
                 </div>
@@ -737,7 +753,7 @@ document.addEventListener("click", async event => {
   }
 
   if (action === "check-open-important") {
-    const important = state.items.filter(i => i.important && !i.checked);
+    const important = state.items.filter(i => itemImportant(i) && !i.checked);
     if (!important.length) toast("Keine wichtigen offenen Punkte.");
     else toast(`${important.length} wichtige ${important.length === 1 ? "Sache ist" : "Sachen sind"} noch offen.`);
   }
@@ -746,7 +762,7 @@ document.addEventListener("click", async event => {
     if (packingIsReadOnly()) return;
     const item = state.items.find(i => i.id === target.dataset.id);
     if (!item) return;
-    const ok = await confirmDelete("Eintrag löschen?", `„${item.name}“ wird aus dieser Reise entfernt.`);
+    const ok = await confirmDelete("Eintrag löschen?", `„${itemName(item)}“ wird aus dieser Reise entfernt.`);
     if (!ok) return;
     if (item.source === "generated" || isLegacyGenerated(item)) {
       item.dismissed = true;
