@@ -1,4 +1,4 @@
-const CACHE = "kofferly-shell-v50";
+const CACHE = "kofferly-shell-v51";
 const ASSETS = [
   "./",
   "./index.html",
